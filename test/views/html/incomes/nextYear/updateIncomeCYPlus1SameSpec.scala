@@ -42,5 +42,5 @@ class updateIncomeCYPlus1SameSpec extends TaiViewSpec {
 
   }
 
-  override def view: Html = views.html.incomes.nextYear.updateIncomeCYPlus1Same(employerName, employmentID, newAmount)
+  override def view: Html = views.html.incomes.nextYear.updateIncomeCYPlus1Same(employerName, newAmount)
 }

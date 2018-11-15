@@ -208,7 +208,7 @@ class UpdateIncomeNextYearControllerSpec extends PlaySpec
           val result: Future[Result] = testController.same(employmentID)(fakeRequest)
 
           status(result) mustBe OK
-          result rendersTheSameViewAs updateIncomeCYPlus1Same(employerName, employmentID, currentEstPay)
+          result rendersTheSameViewAs updateIncomeCYPlus1Same(employerName, currentEstPay)
         }
       }
 
