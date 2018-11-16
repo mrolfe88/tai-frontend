@@ -21,12 +21,14 @@ import uk.gov.hmrc.play.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{ HeaderCarrier, NotFoundException }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, NotFoundException}
+import uk.gov.hmrc.tai.config.WSHttp
 
 trait JourneyCacheConnector {
 
   val serviceUrl: String
   val httpHandler: HttpHandler
+  val httpClient: WSHttp = WSHttp
 
   def cacheUrl(journeyName: String) = s"$serviceUrl/tai/journey-cache/$journeyName"
 
@@ -59,7 +61,12 @@ trait JourneyCacheConnector {
   def flush(journeyName: String)(implicit hc: HeaderCarrier): Future[TaiResponse] = {
     httpHandler.deleteFromApi(cacheUrl(journeyName)).map(_ => TaiSuccessResponse)
   }
+
+  def getCache[T](journeyName: String)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = {
+    httpClient.GET[T](cacheUrl(journeyName))
+  }
 }
+
 // $COVERAGE-OFF$
 object JourneyCacheConnector extends JourneyCacheConnector with ServicesConfig{
   override val serviceUrl = baseUrl("tai")

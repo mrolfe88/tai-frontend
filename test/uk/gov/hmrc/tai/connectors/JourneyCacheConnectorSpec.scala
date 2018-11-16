@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
+import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, serverError, urlEqualTo}
 import uk.gov.hmrc.tai.connectors.responses.TaiSuccessResponse
 import controllers.FakeTaiPlayApplication
 import org.joda.time.LocalDate
@@ -31,9 +32,19 @@ import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.language.postfixOps
 import play.api.http.Status._
-import uk.gov.hmrc.http.{ HeaderCarrier, HttpResponse, InternalServerException, NotFoundException }
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, InternalServerException, NotFoundException}
+import utils.WireMockHelper
 
-class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication {
+case class Key21(key21: String)
+object Key21 {
+  implicit val reads = Json.reads[Key21]
+}
+case class TestObjForReads(key1: String, key2: Key21, key3: Boolean, key4: Int, key5: Option[Int], key6: Seq[String])
+object TestObjForReads {
+  implicit val reads = Json.reads[TestObjForReads]
+}
+
+class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiPlayApplication with WireMockHelper {
 
   "currentCache" must {
 
@@ -132,12 +143,45 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
     }
   }
 
+  "getCache" must {
+    "return a thing" in {
+      val testResponseJson = Json.obj(
+        "key1" -> "value1",
+        "key2" -> Json.obj(
+          "key21" -> "value21"
+        ),
+        "key3" -> false,
+        "key4" -> 1,
+        "key5" -> JsNull,
+        "key6" -> JsArray(
+          Seq(
+            JsString("value61"),
+            JsString("value62")
+          )
+        )
+      )
+
+      val expectedParsedResonse = TestObjForReads("value1", Key21("value21"), false, 1, None, Seq("value61", "value62"))
+
+      server.stubFor(
+        get(
+          urlEqualTo(s"/tai/journey-cache/$journeyName")
+        ).willReturn(
+          ok(testResponseJson.toString())
+        )
+      )
+
+      val result: TestObjForReads = Await.result(createSUT.getCache[TestObjForReads](journeyName), 5.seconds)
+
+      result mustBe expectedParsedResonse
+    }
+  }
+
   private val journeyName = "journey1"
-  private def createSUT() = new SUT
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private class SUT extends JourneyCacheConnector {
-    override val serviceUrl: String = "mockUrl"
+  private def createSUT(): JourneyCacheConnector = new JourneyCacheConnector {
+    override val serviceUrl: String = s"http://localhost:${server.port()}"
     override val httpHandler: HttpHandler = mock[HttpHandler]
   }
 }
