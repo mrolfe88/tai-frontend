@@ -38,7 +38,8 @@ import utils.WireMockHelper
 case class Key21(key21: String)
 object Key21 {
   implicit val reads = Json.reads[Key21]
-}
+
+
 case class TestObjForReads(key1: String, key2: Key21, key3: Boolean, key4: Int, key5: Option[Int], key6: Seq[String])
 object TestObjForReads {
   implicit val reads = Json.reads[TestObjForReads]

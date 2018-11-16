@@ -19,8 +19,8 @@ package uk.gov.hmrc.tai.service
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
+import uk.gov.hmrc.tai.connectors.JourneyCacheConnector
 import uk.gov.hmrc.tai.connectors.responses.{TaiResponse, TaiSuccessResponse}
-import uk.gov.hmrc.tai.connectors.responses.TaiResponse
 import uk.gov.hmrc.tai.model.TaxYear
 import uk.gov.hmrc.tai.util.constants.journeyCache.UpdateNextYearsIncomeConstants
 import uk.gov.hmrc.tai.model.cache.UpdateNextYearsIncomeCacheModel
@@ -33,6 +33,7 @@ import scala.util.Try
 class UpdateNextYearsIncomeService {
 
   lazy val journeyCacheService: JourneyCacheService = JourneyCacheService(UpdateNextYearsIncomeConstants.JOURNEY_KEY)
+  lazy val cacheConnector: JourneyCacheConnector = JourneyCacheConnector
   lazy val employmentService: EmploymentService = EmploymentService
   lazy val taxAccountService: TaxAccountService = TaxAccountService
 
@@ -61,25 +62,28 @@ class UpdateNextYearsIncomeService {
   }
 
   def get(employmentId: Int, nino: Nino)(implicit hc: HeaderCarrier): Future[UpdateNextYearsIncomeCacheModel] = {
-    journeyCacheService.currentCache flatMap {
-      case cache: Map[String, String] if cache.isEmpty => setup(employmentId, nino)
-      case cache: Map[String, String] => {
-        if (cache.contains(UpdateNextYearsIncomeConstants.NEW_AMOUNT)) {
-          Future.successful(UpdateNextYearsIncomeCacheModel(
-            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_NAME),
-            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_ID).toInt,
-            cache(UpdateNextYearsIncomeConstants.IS_PENSION).toBoolean,
-            cache(UpdateNextYearsIncomeConstants.CURRENT_AMOUNT).toInt,
-            Some(cache(UpdateNextYearsIncomeConstants.NEW_AMOUNT).toInt)))
-        } else {
-          Future.successful(UpdateNextYearsIncomeCacheModel(cache(
-            UpdateNextYearsIncomeConstants.EMPLOYMENT_NAME),
-            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_ID).toInt,
-            cache(UpdateNextYearsIncomeConstants.IS_PENSION).toBoolean,
-            cache(UpdateNextYearsIncomeConstants.CURRENT_AMOUNT).toInt))
-        }
-      }
-    }
+    cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](UpdateNextYearsIncomeConstants.JOURNEY_KEY)
+
+    //    journeyCacheService.currentCache flatMap {
+    //      case cache: Map[String, String] if cache.isEmpty => setup(employmentId, nino)
+    //      case cache: Map[String, String] => {
+    //        if (cache.contains(UpdateNextYearsIncomeConstants.NEW_AMOUNT)) {
+    //          Future.successful(UpdateNextYearsIncomeCacheModel(
+    //            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_NAME),
+    //            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_ID).toInt,
+    //            cache(UpdateNextYearsIncomeConstants.IS_PENSION).toBoolean,
+    //            cache(UpdateNextYearsIncomeConstants.CURRENT_AMOUNT).toInt,
+    //            Some(cache(UpdateNextYearsIncomeConstants.NEW_AMOUNT).toInt)))
+    //        } else {
+    //          Future.successful(UpdateNextYearsIncomeCacheModel(cache(
+    //            UpdateNextYearsIncomeConstants.EMPLOYMENT_NAME),
+    //            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_ID).toInt,
+    //            cache(UpdateNextYearsIncomeConstants.IS_PENSION).toBoolean,
+    //            cache(UpdateNextYearsIncomeConstants.CURRENT_AMOUNT).toInt))
+    //        }
+    //      }
+    //    }
+
   }
 
   def setNewAmount(newValue: String, employmentId: Int, nino: Nino)(implicit hc: HeaderCarrier): Future[UpdateNextYearsIncomeCacheModel] = {
