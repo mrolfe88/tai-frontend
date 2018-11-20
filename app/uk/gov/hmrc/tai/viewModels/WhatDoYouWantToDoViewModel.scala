@@ -49,7 +49,8 @@ case class WhatDoYouWantToDoViewModel(isAnyIFormInProgress: Boolean,
       case (_, Some(mismatch)) if mismatch.mismatch => {
         ListMap(
           GoogleAnalyticsConstants.taiLandingPageTCCKey -> GoogleAnalyticsConstants.taiLandingPageMismatchValue,
-          GoogleAnalyticsConstants.taiLandingPageConfirmedKey -> formatSeqToString(mismatch.confirmedTaxCodes),
+          GoogleAnalyticsConstants.taiLandingPageTaxCodeHistoryKey -> formatSeqToString(mismatch.confirmedTaxCodes),
+          GoogleAnalyticsConstants.taiLandingPageConfirmedKey -> formatSeqToString(mismatch.unconfirmedTaxCodes),
           GoogleAnalyticsConstants.taiLandingPageUnconfirmedKey -> formatSeqToString(mismatch.unconfirmedTaxCodes)
         )
       }

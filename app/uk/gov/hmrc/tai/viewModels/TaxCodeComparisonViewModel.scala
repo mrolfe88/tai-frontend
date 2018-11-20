@@ -32,8 +32,6 @@ case class TaxCodeComparisonViewModel(employmentTaxCodes: Seq[TaxCodeDetail], pe
 
   private val employmentHasNotScottishTaxCodeCurrentYear = !employmentTaxCodes.exists(_.taxCodes.head.startsWith(ScottishTaxCodePrefix))
   private val employmentHasScottishTaxCodeNextYear = employmentTaxCodes.exists(_.taxCodes.last.startsWith(ScottishTaxCodePrefix))
-
-
   private val pensionHasNotScottishTaxCodeCurrentYear = !pensionTaxCodes.exists(_.taxCodes.head.startsWith(ScottishTaxCodePrefix))
   private val pensionHasScottishTaxCodeNextYear = pensionTaxCodes.exists(_.taxCodes.last.startsWith(ScottishTaxCodePrefix))
 
@@ -50,7 +48,9 @@ object TaxCodeComparisonViewModel {
     TaxCodeComparisonViewModel(employmentTaxCodes, pensionTaxCodes)
   }
 
-  private def taxCodeDetails(taxCodeForYears: Seq[TaxCodeIncomesForYear], taxComponentType: TaxComponentType)(implicit messages: Messages): Seq[TaxCodeDetail] = {
+  private def taxCodeDetails(taxCodeForYears: Seq[TaxCodeIncomesForYear],
+                             taxComponentType: TaxComponentType
+                            )(implicit messages: Messages): Seq[TaxCodeDetail] = {
 
     val filteredTaxCodeIncomes = filterTaxCodeIncomesForYear(taxCodeForYears, taxComponentType)
     val sortedTaxCodeIncomes = filteredTaxCodeIncomes.sortWith(_.year < _.year)
