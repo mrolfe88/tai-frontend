@@ -57,7 +57,7 @@ class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar{
         val testService = createTestService
         val nino = generateNino
 
-        val taxCodeMismatch = TaxCodeMismatchFactory.matchedTaxCode
+        val taxCodeMismatch = TaxCodeMismatchFactory.matchedTaxCodes
         val hasTaxCodeChanged = HasTaxCodeChanged(changed = true, Some(taxCodeMismatch))
 
         when(testService.taxCodeChangeConnector.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(TaiSuccessResponseWithPayload(true)))
@@ -88,7 +88,7 @@ class TaxCodeChangeServiceSpec extends PlaySpec with MockitoSugar{
         val testService = createTestService
         val nino = generateNino
 
-        val taxCodeMismatch = TaxCodeMismatchFactory.matchedTaxCode
+        val taxCodeMismatch = TaxCodeMismatchFactory.matchedTaxCodes
 
         when(testService.taxCodeChangeConnector.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(TaiTaxAccountFailureResponse("ERROR")))
         when(testService.taxCodeChangeConnector.taxCodeMismatch(any())(any())).thenReturn(Future.successful(TaiSuccessResponseWithPayload(taxCodeMismatch)))

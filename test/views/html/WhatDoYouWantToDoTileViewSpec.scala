@@ -99,7 +99,7 @@ class WhatDoYouWantToDoTileViewSpec extends TaiViewSpec {
   private lazy val modelNoiFormNoCyPlus1 = WhatDoYouWantToDoViewModel(false, false)
   private lazy val modelNoiFormWithCyPlus1 = WhatDoYouWantToDoViewModel(false, true)
   private lazy val modelWithiFormNoCyPlus1 = WhatDoYouWantToDoViewModel(true, false)
-  private lazy val taxCodeMatched = TaxCodeMismatchFactory.matchedTaxCode
+  private lazy val taxCodeMatched = TaxCodeMismatchFactory.matchedTaxCodes
   private lazy val modeWithCyPlus1TaxCodeChange = WhatDoYouWantToDoViewModel(false, true, true, Some(taxCodeMatched))
   override def view: Html = views.html.whatDoYouWantToDoTileView(form, modelNoiFormNoCyPlus1)
 }

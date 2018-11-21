@@ -27,8 +27,8 @@ class WhatDoYouWantToDoViewModelSpec extends PlaySpec {
     Map(GoogleAnalyticsConstants.taiLandingPageInformation -> result)
   }
 
-  val mismatchedTaxCode = TaxCodeMismatchFactory.mismatchedTaxCodeComplex
-  val matchedTaxCode = TaxCodeMismatchFactory.matchedTaxCode
+  val mismatchedTaxCode = TaxCodeMismatchFactory.mismatchedOnUnconfirmed
+  val matchedTaxCode = TaxCodeMismatchFactory.matchedTaxCodes
 
   "showTaxCodeChangeTile" must {
     "return true" when {
@@ -104,7 +104,7 @@ class WhatDoYouWantToDoViewModelSpec extends PlaySpec {
       "there has been a tax code change" in {
         val viewModel = WhatDoYouWantToDoViewModel(false, true, true, Some(mismatchedTaxCode))
 
-        val expected = "TCC=true;TCM=true;CONFIRMED=[1180L,0T];UNCONFIRMED=[1185L,0T];CY=true;PY=true;CY+1=true"
+        val expected = "TCC=true;TCM=true;CONFIRMED=[1185L];UNCONFIRMED=[0T];TAXCODEHISTORY=[1185L];CY=true;PY=true;CY+1=true"
 
         viewModel.gaDimensions() mustEqual gaMap(expected)
       }
@@ -114,7 +114,7 @@ class WhatDoYouWantToDoViewModelSpec extends PlaySpec {
       "there has not been a tax code change" in {
         val viewModel = WhatDoYouWantToDoViewModel(false, true, false, Some(mismatchedTaxCode))
 
-        val expected = "TCC=false;TCM=true;CONFIRMED=[1180L,0T];UNCONFIRMED=[1185L,0T];CY=true;PY=true;CY+1=true"
+        val expected = "TCC=false;TCM=true;CONFIRMED=[1185L];UNCONFIRMED=[0T];TAXCODEHISTORY=[1185L];CY=true;PY=true;CY+1=true"
 
         viewModel.gaDimensions() mustEqual gaMap(expected)
       }
@@ -124,7 +124,7 @@ class WhatDoYouWantToDoViewModelSpec extends PlaySpec {
       "there has been a tax code change" in {
         val viewModel = WhatDoYouWantToDoViewModel(false, true, true, Some(matchedTaxCode))
 
-        val expected = "TCC=true;TCM=false;CONFIRMED=[1185L];UNCONFIRMED=[1185L];CY=true;PY=true;CY+1=true"
+        val expected = "TCC=true;TCM=false;CONFIRMED=[1185L];UNCONFIRMED=[1185L];TAXCODEHISTORY=[1185L];CY=true;PY=true;CY+1=true"
 
         viewModel.gaDimensions() mustEqual gaMap(expected)
       }
@@ -134,7 +134,7 @@ class WhatDoYouWantToDoViewModelSpec extends PlaySpec {
       "there has not been a tax code change" in {
         val viewModel = WhatDoYouWantToDoViewModel(false, true, false, Some(matchedTaxCode))
 
-        val expected = "TCC=false;TCM=false;CONFIRMED=[1185L];UNCONFIRMED=[1185L];CY=true;PY=true;CY+1=true"
+        val expected = "TCC=false;TCM=false;CONFIRMED=[1185L];UNCONFIRMED=[1185L];TAXCODEHISTORY=[1185L];CY=true;PY=true;CY+1=true"
 
         viewModel.gaDimensions() mustEqual gaMap(expected)
       }

@@ -32,8 +32,8 @@ object GoogleAnalyticsConstants {
   val taiLandingPageTCCKey = "TCC"
   val taiLandingPageTCMKey = "TCM"
   val taiLandingPageCY1Key = "CY+1"
-  val taiLandingPageTaxCodeHistoryKey = "TAXCODEHISTORY"
-  val taiLandingPageUnconfirmedKey = "UNCONFIRMED"
   val taiLandingPageConfirmedKey = "CONFIRMED"
+  val taiLandingPageUnconfirmedKey = "UNCONFIRMED"
+  val taiLandingPageTaxCodeHistoryKey = "TAXCODEHISTORY"
   val taiLandingPageMismatchValue = "mismatch"
 }

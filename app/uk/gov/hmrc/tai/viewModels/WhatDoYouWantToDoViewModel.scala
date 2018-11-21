@@ -28,7 +28,7 @@ case class WhatDoYouWantToDoViewModel(isAnyIFormInProgress: Boolean,
 
   def showTaxCodeChangeTile(): Boolean = {
     (hasTaxCodeChanged, taxCodeMismatch) match {
-      case (true, Some(TaxCodeMismatch(false, _, _))) => true
+      case (true, Some(TaxCodeMismatch(_ ,false, _, _, _))) => true
       case _ => false
     }
   }
@@ -48,10 +48,11 @@ case class WhatDoYouWantToDoViewModel(isAnyIFormInProgress: Boolean,
     (taxCodeMismatch) match {
       case (Some(mismatch)) => {
         ListMap(
-          GoogleAnalyticsConstants.taiLandingPageTCCKey -> GoogleAnalyticsConstants.taiLandingPageMismatchValue,
-          GoogleAnalyticsConstants.taiLandingPageTaxCodeHistoryKey -> formatSeqToString(mismatch.confirmedTaxCodes),
-          GoogleAnalyticsConstants.taiLandingPageConfirmedKey -> formatSeqToString(mismatch.unconfirmedTaxCodes),
-          GoogleAnalyticsConstants.taiLandingPageUnconfirmedKey -> formatSeqToString(mismatch.unconfirmedTaxCodes)
+          GoogleAnalyticsConstants.taiLandingPageTCCKey -> hasTaxCodeChanged.toString,
+          GoogleAnalyticsConstants.taiLandingPageTCMKey -> mismatch.mismatchUnconfirmedTCH.toString,
+          GoogleAnalyticsConstants.taiLandingPageConfirmedKey -> formatSeqToString(mismatch.confirmed),
+          GoogleAnalyticsConstants.taiLandingPageUnconfirmedKey -> formatSeqToString(mismatch.unconfirmed),
+          GoogleAnalyticsConstants.taiLandingPageTaxCodeHistoryKey -> formatSeqToString(mismatch.taxCodeHistory)
         )
       }
       case _ => ListMap(GoogleAnalyticsConstants.taiLandingPageTCCKey -> hasTaxCodeChanged.toString)

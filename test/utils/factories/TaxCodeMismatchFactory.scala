@@ -22,34 +22,65 @@ import uk.gov.hmrc.tai.model.domain.TaxCodeMismatch
 object TaxCodeMismatchFactory {
 
 
-  def matchedTaxCode: TaxCodeMismatch = {
-    TaxCodeMismatch(false, Seq("1185L"), Seq("1185L"))
+  def matchedTaxCodes: TaxCodeMismatch = {
+    TaxCodeMismatch(
+      mismatchConfirmedTCH = false,
+      mismatchUnconfirmedTCH = false,
+      confirmed = Seq("1185L"),
+      unconfirmed = Seq("1185L"),
+      taxCodeHistory = Seq("1185L"))
   }
 
-  def mismatchedTaxCode: TaxCodeMismatch = {
-    TaxCodeMismatch(true, Seq("1185L"), Seq("0T"))
+  def mismatchedOnConfirmed: TaxCodeMismatch = {
+    TaxCodeMismatch(
+      mismatchConfirmedTCH = true,
+      mismatchUnconfirmedTCH = false,
+      confirmed = Seq("0T"),
+      unconfirmed = Seq("1185L"),
+      taxCodeHistory = Seq("1185L"))
   }
 
-  def mismatchedTaxCodeComplex: TaxCodeMismatch = {
-    TaxCodeMismatch(true, Seq("1185L", "0T"), Seq("1180L", "0T"))
+  def mismatchedOnUnconfirmed: TaxCodeMismatch = {
+    TaxCodeMismatch(
+      mismatchConfirmedTCH = false,
+      mismatchUnconfirmedTCH = true,
+      confirmed = Seq("1185L"),
+      unconfirmed = Seq("0T"),
+      taxCodeHistory = Seq("1185L"))
   }
 
   def matchedTaxCodeJson: JsObject = {
     Json.obj(
       "data" -> Json.obj(
-        "mismatch" -> false,
-        "unconfirmedTaxCodes" -> Json.arr("1185L"),
-        "confirmedTaxCodes" -> Json.arr("1185L")
+        "mismatchConfirmedTCH" -> false,
+        "mismatchUnconfirmedTCH" -> false,
+        "confirmed" -> Json.arr("1185L"),
+        "unconfirmed" -> Json.arr("1185L"),
+        "taxCodeHistory" -> Json.arr("1185L")
       )
     )
   }
 
-  def mismatchedTaxCodeJson: JsObject = {
+  def mismatchedOnConfirmedJson: JsObject = {
     Json.obj(
       "data" -> Json.obj(
-          "mismatch" -> true,
-        "unconfirmedTaxCodes" -> Json.arr("1185L"),
-        "confirmedTaxCodes" -> Json.arr("0T")
+        "mismatchConfirmedTCH" -> true,
+        "mismatchUnconfirmedTCH" -> false,
+        "confirmed" -> Json.arr("0T"),
+        "unconfirmed" -> Json.arr("1185L"),
+        "taxCodeHistory" -> Json.arr("1185L")
+      )
+    )
+  }
+
+  def mismatchedOnUnconfirmedJson: JsObject = {
+    Json.obj(
+      "data" -> Json.obj(
+        "mismatchConfirmedTCH" -> false,
+        "mismatchUnconfirmedTCH" -> true,
+        "confirmed" -> Json.arr("1185L"),
+        "unconfirmed" -> Json.arr("0T"),
+        "taxCodeHistory" -> Json.arr("1185L")
       )
     )
   }

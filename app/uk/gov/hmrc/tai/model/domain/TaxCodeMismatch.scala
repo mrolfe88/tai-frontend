@@ -18,7 +18,11 @@ package uk.gov.hmrc.tai.model.domain
 
 import play.api.libs.json.{Json, OFormat}
 
-case class TaxCodeMismatch(mismatch: Boolean, unconfirmedTaxCodes: Seq[String], confirmedTaxCodes: Seq[String])
+case class TaxCodeMismatch(mismatchConfirmedTCH: Boolean,
+                           mismatchUnconfirmedTCH: Boolean,
+                           confirmed: Seq[String],
+                           unconfirmed: Seq[String],
+                           taxCodeHistory: Seq[String])
 
 object TaxCodeMismatch {
   implicit val format: OFormat[TaxCodeMismatch] = Json.format[TaxCodeMismatch]

@@ -77,7 +77,7 @@ class WhatDoYouWantToDoControllerSpec extends PlaySpec with FakeTaiPlayApplicati
       "tile view is enabled and there has not been a tax code change" in {
         val testController = createSUT(isCyPlusOneEnabled = true, isTileViewEnabled = true)
 
-        val hasTaxCodeChanged = HasTaxCodeChanged(false, Some(TaxCodeMismatchFactory.matchedTaxCode))
+        val hasTaxCodeChanged = HasTaxCodeChanged(false, Some(TaxCodeMismatchFactory.matchedTaxCodes))
 
         when(testController.taxCodeChangeService.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(hasTaxCodeChanged))
         when(testController.trackingService.isAnyIFormInProgress(any())(any())).thenReturn(Future.successful(false))
@@ -97,7 +97,7 @@ class WhatDoYouWantToDoControllerSpec extends PlaySpec with FakeTaiPlayApplicati
       "tile view is enabled and there has been a tax code change and cyPlusOne is enabled" in {
         val testController = createSUT(isCyPlusOneEnabled = true, isTileViewEnabled = true)
 
-        val hasTaxCodeChanged = HasTaxCodeChanged(true, Some(TaxCodeMismatchFactory.matchedTaxCode))
+        val hasTaxCodeChanged = HasTaxCodeChanged(true, Some(TaxCodeMismatchFactory.matchedTaxCodes))
 
         when(testController.taxCodeChangeService.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(hasTaxCodeChanged))
         when(testController.trackingService.isAnyIFormInProgress(any())(any())).thenReturn(Future.successful(false))
@@ -118,7 +118,7 @@ class WhatDoYouWantToDoControllerSpec extends PlaySpec with FakeTaiPlayApplicati
       "tile view is enabled and cyPlusOne is disabled" in {
         val testController = createSUT(isCyPlusOneEnabled = false, isTileViewEnabled = true)
 
-        val hasTaxCodeChanged = HasTaxCodeChanged(true, Some(TaxCodeMismatchFactory.matchedTaxCode))
+        val hasTaxCodeChanged = HasTaxCodeChanged(true, Some(TaxCodeMismatchFactory.matchedTaxCodes))
 
         when(testController.taxCodeChangeService.hasTaxCodeChanged(any())(any())).thenReturn(Future.successful(hasTaxCodeChanged))
         when(testController.trackingService.isAnyIFormInProgress(any())(any())).thenReturn(Future.successful(false))
