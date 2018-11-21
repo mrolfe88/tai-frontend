@@ -210,6 +210,48 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with MockitoSugar with FakeTai
     }
   }
 
+  "taxCodeMismatch" should {
+    "return if the is a tax code is umatched" when {
+      "provided with a valid nino" in {
+
+        val testConnector = createTestConnector
+        val nino = generateNino
+
+        val taxCodeMismatch = s"/tai/${nino.nino}/tax-account/tax-code-mismatch"
+
+        val expectedResult = TaxCodeMismatchFactory.matchedTaxCodes
+        val json = TaxCodeMismatchFactory.matchedTaxCodeJson
+
+        server.stubFor(
+          get(urlEqualTo(taxCodeMismatch)).willReturn(ok(json.toString()))
+        )
+
+        val result = Await.result(testConnector.taxCodeMismatch(nino), 5 seconds)
+        result mustEqual TaiSuccessResponseWithPayload(expectedResult)
+      }
+    }
+
+    "return if the is a tax code matched" when {
+      "provided with a valid nino" in {
+
+        val testConnector = createTestConnector
+        val nino = generateNino
+
+        val taxCodeMismatch = s"/tai/${nino.nino}/tax-account/tax-code-mismatch"
+
+        val expectedResult = TaxCodeMismatchFactory.mismatchedOnUnconfirmed
+        val json = TaxCodeMismatchFactory.mismatchedOnUnconfirmedJson
+
+        server.stubFor(
+          get(urlEqualTo(taxCodeMismatch)).willReturn(ok(json.toString()))
+        )
+
+        val result = Await.result(testConnector.taxCodeMismatch(nino), 5 seconds)
+        result mustEqual TaiSuccessResponseWithPayload(expectedResult)
+      }
+    }
+  }
+
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
   private def createTestConnector = new testTaxCodeChangeConnector
