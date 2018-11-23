@@ -23,6 +23,7 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import uk.gov.hmrc.domain.{Generator, Nino}
 import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.tai.connectors.JourneyCacheConnector
 import uk.gov.hmrc.tai.connectors.responses.TaiSuccessResponse
 import uk.gov.hmrc.tai.model.TaxYear
 import uk.gov.hmrc.tai.model.cache.UpdateNextYearsIncomeCacheModel
@@ -38,108 +39,112 @@ import scala.util.Random
 
 class UpdateNextYearsIncomeServiceSpec extends PlaySpec with MockitoSugar with WireMockHelper {
 
-  "setup" must {
-    "initialize the journey cache and return the cache model" when {
-      "an taxCodeIncome and Employment is returned" in {
-        val nino = generateNino
-
-        when(updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any()))
-          .thenReturn(Future.successful(Some(employment(employmentName))))
-
-        when(updateNextYearsIncomeService.taxAccountService.taxCodeIncomeForEmployment(
-          Matchers.eq(nino), Matchers.eq(TaxYear().next), Matchers.eq(employmentId))(any())
-        ).thenReturn(Future.successful(Some(taxCodeIncome(employmentName, employmentId, employmentAmount))))
-
-        when(updateNextYearsIncomeService.journeyCacheService.currentCache(any())).thenReturn(
-          Future.successful(Map.empty[String,String])
-        )
-        val result = Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
-
-        verify(updateNextYearsIncomeService.journeyCacheService, times(1))
-          .cache(expectedMap(employmentName, employmentId, isPension, employmentAmount))
-
-        result mustBe UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, None)
-      }
-    }
-
-    "throw a runtime exception" when {
-      "could not retrieve a TaxCodeIncome" in {
-        val nino = generateNino
-
-        when(updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any()))
-          .thenReturn(Future.successful(Some(employment(employmentName))))
-
-        when(updateNextYearsIncomeService.taxAccountService.taxCodeIncomeForEmployment(
-          Matchers.eq(nino), Matchers.eq(TaxYear().next), Matchers.eq(employmentId))(any())
-        ).thenReturn(Future.successful(None))
-
-        val result: RuntimeException = the[RuntimeException] thrownBy Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
-
-        result.getMessage mustBe "[UpdateNextYearsIncomeService] Could not set up next years estimated income journey"
-      }
-
-      "could not retrieve a Employment" in {
-        val nino = generateNino
-
-        when(updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any()))
-          .thenReturn(Future.successful(None))
-
-        when(updateNextYearsIncomeService.taxAccountService.taxCodeIncomeForEmployment(
-          Matchers.eq(nino), Matchers.eq(TaxYear().next), Matchers.eq(employmentId))(any())
-        ).thenReturn(Future.successful(Some(taxCodeIncome(employmentName, employmentId, employmentAmount))))
-
-        val result: RuntimeException = the[RuntimeException] thrownBy Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
-
-        result.getMessage mustBe "[UpdateNextYearsIncomeService] Could not set up next years estimated income journey"
-      }
-    }
-  }
-
   "get" must {
-    "retrieve the cached values and returns the cache model" when {
-      "journey values exist without a new amount in the cache" in {
+    "return journey data" when {
+      "cache does not exist" in {
         val nino = generateNino
+        val updateNextYearsIncomeService = newSUT
 
-        when(updateNextYearsIncomeService.journeyCacheService.currentCache(any())).thenReturn(
-          Future.successful(expectedMap(employmentName, employmentId, isPension, employmentAmount))
+        when(
+          updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any())
+        ).thenReturn(
+          Future.successful(Some(employment(employmentName)))
         )
-
-        val result = Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
-
-        result mustBe UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, None)
-      }
-
-      "journey values exist with a new amount in the cache" in {
-        val nino = generateNino
-
-        when(updateNextYearsIncomeService.journeyCacheService.currentCache(any())).thenReturn(
-          Future.successful(fullMap(employmentName, employmentId, isPension, employmentAmount))
-        )
-
-        val result = Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
-
-        result mustBe UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, Some(employmentAmount))
-      }
-    }
-
-    "setup the cache" when {
-      "journey values do not exist in the cache" in {
-        val nino = generateNino
-
-        when(updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any()))
-          .thenReturn(Future.successful(Some(employment(employmentName))))
 
         when(updateNextYearsIncomeService.taxAccountService.taxCodeIncomeForEmployment(
           Matchers.eq(nino), Matchers.eq(TaxYear().next), Matchers.eq(employmentId))(any())
-        ).thenReturn(Future.successful(Some(taxCodeIncome(employmentName, employmentId, employmentAmount))))
-
-        when(updateNextYearsIncomeService.journeyCacheService.currentCache(any())).thenReturn(
-          Future.successful(Map[String, String]())
+        ).thenReturn(
+          Future.successful(Some(taxCodeIncome(employmentName, employmentId, employmentAmount)))
         )
+
+        val connectorResponse = UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, None)
+        when(
+          updateNextYearsIncomeService.cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](Meq(UpdateNextYearsIncomeConstants.JOURNEY_KEY))(any(), any())
+        ).thenReturn(
+          Future.successful(None)
+        )
+
+        when(
+          updateNextYearsIncomeService.journeyCacheService.cache(Meq(connectorResponse.toCacheMap))(any())
+        ).thenReturn(Future.successful(Map.empty[String, String]))
 
         val result = Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
 
-        result mustBe UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, None)
+        verify(updateNextYearsIncomeService.journeyCacheService, times(1)).cache(
+          expectedMap(employmentName, employmentId, isPension, employmentAmount)
+        )
+
+        verify(updateNextYearsIncomeService.journeyCacheService, times(1)).cache(
+          connectorResponse.toCacheMap
+        )
+
+        result mustBe connectorResponse
+
+      }
+
+      "cache does exist" must {
+        "returns the cached value" in {
+          val nino = generateNino
+          val updateNextYearsIncomeService = newSUT
+
+          when(
+            updateNextYearsIncomeService.cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](Meq(UpdateNextYearsIncomeConstants.JOURNEY_KEY))(any(), any())
+          ).thenReturn(
+            Future.successful(
+              Some(UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount))
+            )
+          )
+
+          val result = Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
+
+          result mustBe UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, None)
+        }
+      }
+
+      "throw a runtime exception" when {
+        "could not retrieve a TaxCodeIncome" in {
+          val nino = generateNino
+          val updateNextYearsIncomeService = newSUT
+
+          when(
+            updateNextYearsIncomeService.cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](Meq(UpdateNextYearsIncomeConstants.JOURNEY_KEY))(any(), any())
+          ).thenReturn(
+            Future.successful(None)
+          )
+
+          when(updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any()))
+            .thenReturn(Future.successful(Some(employment(employmentName))))
+
+          when(updateNextYearsIncomeService.taxAccountService.taxCodeIncomeForEmployment(
+            Matchers.eq(nino), Matchers.eq(TaxYear().next), Matchers.eq(employmentId))(any())
+          ).thenReturn(Future.successful(None))
+
+          val result: RuntimeException = the[RuntimeException] thrownBy Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
+
+          result.getMessage mustBe "[UpdateNextYearsIncomeService] Could not set up next years estimated income journey"
+        }
+
+        "could not retrieve a Employment" in {
+          val nino = generateNino
+          val updateNextYearsIncomeService = newSUT
+
+          when(
+            updateNextYearsIncomeService.cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](Meq(UpdateNextYearsIncomeConstants.JOURNEY_KEY))(any(), any())
+          ).thenReturn(
+            Future.successful(None)
+          )
+
+          when(updateNextYearsIncomeService.employmentService.employment(Matchers.eq(nino), Matchers.eq(employmentId))(any()))
+            .thenReturn(Future.successful(None))
+
+          when(updateNextYearsIncomeService.taxAccountService.taxCodeIncomeForEmployment(
+            Matchers.eq(nino), Matchers.eq(TaxYear().next), Matchers.eq(employmentId))(any())
+          ).thenReturn(Future.successful(Some(taxCodeIncome(employmentName, employmentId, employmentAmount))))
+
+          val result: RuntimeException = the[RuntimeException] thrownBy Await.result(updateNextYearsIncomeService.get(employmentId, nino), 5.seconds)
+
+          result.getMessage mustBe "[UpdateNextYearsIncomeService] Could not set up next years estimated income journey"
+        }
       }
     }
   }
@@ -148,9 +153,13 @@ class UpdateNextYearsIncomeServiceSpec extends PlaySpec with MockitoSugar with W
     "update the cache with the new amount" when {
       "journey values are successfully retrieved from the cache" in {
         val nino = generateNino
+        val updateNextYearsIncomeService = newSUT
 
-        when(updateNextYearsIncomeService.journeyCacheService.currentCache(any())).thenReturn(
-          Future.successful(expectedMap(employmentName, employmentId, isPension, employmentAmount))
+        when(updateNextYearsIncomeService.cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](any())(any(), any())
+        ).thenReturn(
+          Future.successful(
+            Some(UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount))
+          )
         )
 
         val result = Await.result(updateNextYearsIncomeService.setNewAmount(employmentAmount.toString, employmentId, nino), 5.seconds)
@@ -166,7 +175,16 @@ class UpdateNextYearsIncomeServiceSpec extends PlaySpec with MockitoSugar with W
   "submit" must {
     "post the values from cache to the tax account" in {
       val nino = generateNino
-      val service = new UpdateNextYearsIncomeServiceTest
+      val service = newSUT
+      val newAmount = employmentAmount + 1
+
+      when(
+        service.cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](any())(any(), any())
+      ).thenReturn(
+        Future.successful(
+          Some(UpdateNextYearsIncomeCacheModel(employmentName, employmentId, isPension, employmentAmount, Some(newAmount)))
+        )
+      )
 
       when(
         service.journeyCacheService.currentCache(any())
@@ -176,7 +194,7 @@ class UpdateNextYearsIncomeServiceSpec extends PlaySpec with MockitoSugar with W
 
       when(
         service.taxAccountService.updateEstimatedIncome(
-          Meq(nino), Meq(employmentAmount), Meq(TaxYear().next), Meq(employmentId)
+          Meq(nino), Meq(newAmount), Meq(TaxYear().next), Meq(employmentId)
         )(any())
       ).thenReturn(
         Future.successful(TaiSuccessResponse)
@@ -187,7 +205,7 @@ class UpdateNextYearsIncomeServiceSpec extends PlaySpec with MockitoSugar with W
       verify(
         service.taxAccountService, times(1)
       ).updateEstimatedIncome(
-        Meq(nino), Meq(employmentAmount), Meq(TaxYear().next), Meq(employmentId)
+        Meq(nino), Meq(newAmount), Meq(TaxYear().next), Meq(employmentId)
       )(any())
 
     }
@@ -234,11 +252,10 @@ class UpdateNextYearsIncomeServiceSpec extends PlaySpec with MockitoSugar with W
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  class UpdateNextYearsIncomeServiceTest extends UpdateNextYearsIncomeService {
+  def newSUT = new UpdateNextYearsIncomeService {
     override lazy val journeyCacheService: JourneyCacheService = mock[JourneyCacheService]
+    override lazy val cacheConnector: JourneyCacheConnector = mock[JourneyCacheConnector]
     override lazy val employmentService: EmploymentService = mock[EmploymentService]
     override lazy val taxAccountService: TaxAccountService = mock[TaxAccountService]
   }
-
-  val updateNextYearsIncomeService = new UpdateNextYearsIncomeServiceTest
 }

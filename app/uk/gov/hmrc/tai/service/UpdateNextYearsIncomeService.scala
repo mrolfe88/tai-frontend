@@ -24,11 +24,11 @@ import uk.gov.hmrc.tai.connectors.responses.{TaiResponse, TaiSuccessResponse}
 import uk.gov.hmrc.tai.model.TaxYear
 import uk.gov.hmrc.tai.util.constants.journeyCache.UpdateNextYearsIncomeConstants
 import uk.gov.hmrc.tai.model.cache.UpdateNextYearsIncomeCacheModel
-import uk.gov.hmrc.tai.model.domain.PensionIncome
+import uk.gov.hmrc.tai.model.domain.{Employment, PensionIncome}
+import uk.gov.hmrc.tai.model.domain.income.TaxCodeIncome
 import uk.gov.hmrc.tai.util.FormHelper.convertCurrencyToInt
 
 import scala.concurrent.Future
-import scala.util.Try
 
 class UpdateNextYearsIncomeService {
 
@@ -37,53 +37,11 @@ class UpdateNextYearsIncomeService {
   lazy val employmentService: EmploymentService = EmploymentService
   lazy val taxAccountService: TaxAccountService = TaxAccountService
 
-  def reset(implicit hc: HeaderCarrier): Future[TaiResponse] = {
-    journeyCacheService.flush()
-  }
-
-  private def setup(employmentId: Int, nino: Nino)(implicit hc: HeaderCarrier): Future[UpdateNextYearsIncomeCacheModel] = {
-    val taxCodeIncomeFuture = taxAccountService.taxCodeIncomeForEmployment(nino, TaxYear().next, employmentId)
-    val employmentFuture = employmentService.employment(nino, employmentId)
-
-    for {
-      taxCodeIncomeOption <- taxCodeIncomeFuture
-      employmentOption <- employmentFuture
-    } yield (taxCodeIncomeOption, employmentOption) match {
-      case (Some(taxCodeIncome), Some(employment)) => {
-        val isPension = taxCodeIncome.componentType == PensionIncome
-        val model = UpdateNextYearsIncomeCacheModel(employment.name, employmentId, isPension, taxCodeIncome.amount.toInt)
-
-        journeyCacheService.cache(model.toCacheMap)
-
-        model
-      }
-      case _ => throw new RuntimeException("[UpdateNextYearsIncomeService] Could not set up next years estimated income journey")
-    }
-  }
-
   def get(employmentId: Int, nino: Nino)(implicit hc: HeaderCarrier): Future[UpdateNextYearsIncomeCacheModel] = {
-    cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](UpdateNextYearsIncomeConstants.JOURNEY_KEY)
-
-    //    journeyCacheService.currentCache flatMap {
-    //      case cache: Map[String, String] if cache.isEmpty => setup(employmentId, nino)
-    //      case cache: Map[String, String] => {
-    //        if (cache.contains(UpdateNextYearsIncomeConstants.NEW_AMOUNT)) {
-    //          Future.successful(UpdateNextYearsIncomeCacheModel(
-    //            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_NAME),
-    //            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_ID).toInt,
-    //            cache(UpdateNextYearsIncomeConstants.IS_PENSION).toBoolean,
-    //            cache(UpdateNextYearsIncomeConstants.CURRENT_AMOUNT).toInt,
-    //            Some(cache(UpdateNextYearsIncomeConstants.NEW_AMOUNT).toInt)))
-    //        } else {
-    //          Future.successful(UpdateNextYearsIncomeCacheModel(cache(
-    //            UpdateNextYearsIncomeConstants.EMPLOYMENT_NAME),
-    //            cache(UpdateNextYearsIncomeConstants.EMPLOYMENT_ID).toInt,
-    //            cache(UpdateNextYearsIncomeConstants.IS_PENSION).toBoolean,
-    //            cache(UpdateNextYearsIncomeConstants.CURRENT_AMOUNT).toInt))
-    //        }
-    //      }
-    //    }
-
+    cacheConnector.getCache[UpdateNextYearsIncomeCacheModel](UpdateNextYearsIncomeConstants.JOURNEY_KEY) flatMap {
+      case None => setup(employmentId, nino)
+      case Some(cacheModel) => Future.successful(cacheModel)
+    }
   }
 
   def setNewAmount(newValue: String, employmentId: Int, nino: Nino)(implicit hc: HeaderCarrier): Future[UpdateNextYearsIncomeCacheModel] = {
@@ -100,9 +58,36 @@ class UpdateNextYearsIncomeService {
       case UpdateNextYearsIncomeCacheModel(_, _, _, _, Some(newValue)) => {
         taxAccountService.updateEstimatedIncome(nino, newValue, TaxYear().next, employmentId)
       }
-      case _ => {
-        throw new RuntimeException
+      case UpdateNextYearsIncomeCacheModel(_, _, _, _, None) => {
+        throw new RuntimeException("[UpdateNextYearsIncomeService] [Action: SUBMIT] New estimated income not found in cache ")
       }
+      case _ => {
+        throw new RuntimeException("[UpdateNextYearsIncomeService] [Action: SUBMIT] Could not submit for next years estimated income journey")
+      }
+    }
+  }
+
+  def reset(implicit hc: HeaderCarrier): Future[TaiResponse] = {
+    journeyCacheService.flush()
+  }
+
+  private def setup(employmentId: Int, nino: Nino)(implicit hc: HeaderCarrier): Future[UpdateNextYearsIncomeCacheModel] = {
+    val taxCodeIncomeFuture: Future[Option[TaxCodeIncome]] = taxAccountService.taxCodeIncomeForEmployment(nino, TaxYear().next, employmentId)
+    val employmentFuture: Future[Option[Employment]] = employmentService.employment(nino, employmentId)
+
+    for {
+      taxCodeIncomeOption <- taxCodeIncomeFuture
+      employmentOption <- employmentFuture
+    } yield (taxCodeIncomeOption, employmentOption) match {
+      case (Some(taxCodeIncome), Some(employment)) => {
+        val isPension = taxCodeIncome.componentType == PensionIncome
+        val model = UpdateNextYearsIncomeCacheModel(employment.name, employmentId, isPension, taxCodeIncome.amount.toInt)
+
+        journeyCacheService.cache(model.toCacheMap)
+
+        model
+      }
+      case _ => throw new RuntimeException("[UpdateNextYearsIncomeService] Could not set up next years estimated income journey")
     }
   }
 }

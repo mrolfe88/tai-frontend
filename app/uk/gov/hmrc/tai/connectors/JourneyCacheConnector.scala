@@ -16,13 +16,15 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import uk.gov.hmrc.tai.connectors.responses.{TaiResponse, TaiSuccessResponse}
+import play.api.http.Status._
+import play.api.libs.json.Reads
+import uk.gov.hmrc.http._
 import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.tai.config.WSHttp
+import uk.gov.hmrc.tai.connectors.responses.{TaiResponse, TaiSuccessResponse}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import uk.gov.hmrc.http.{HeaderCarrier, HttpReads, NotFoundException}
-import uk.gov.hmrc.tai.config.WSHttp
 
 trait JourneyCacheConnector {
 
@@ -62,8 +64,15 @@ trait JourneyCacheConnector {
     httpHandler.deleteFromApi(cacheUrl(journeyName)).map(_ => TaiSuccessResponse)
   }
 
-  def getCache[T](journeyName: String)(implicit hc: HeaderCarrier, reads: HttpReads[T]): Future[T] = {
-    httpClient.GET[T](cacheUrl(journeyName))
+  def getCache[T](journeyName: String)(implicit hc: HeaderCarrier, reads: Reads[T]): Future[Option[T]] = {
+    httpClient.GET[HttpResponse](cacheUrl(journeyName)).map(httpResponse =>
+          httpResponse.status match {
+            case OK => Some(httpResponse.json.as[T])
+          }
+    ).recover {
+      case x: NotFoundException => None
+      case _ => throw new RuntimeException(s"[JourneyCacheConnector] - Server error received for $journeyName")
+    }
   }
 }
 

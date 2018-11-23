@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, serverError, urlEqualTo}
-import uk.gov.hmrc.tai.connectors.responses.TaiSuccessResponse
+import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, urlEqualTo, notFound}
 import controllers.FakeTaiPlayApplication
 import org.joda.time.LocalDate
 import org.mockito.Matchers
@@ -27,17 +26,17 @@ import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
 import play.api.http.Status._
 import play.api.libs.json._
+import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, InternalServerException, NotFoundException}
+import uk.gov.hmrc.tai.connectors.responses.TaiSuccessResponse
+import utils.WireMockHelper
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
-import scala.language.postfixOps
-import play.api.http.Status._
-import uk.gov.hmrc.http.{HeaderCarrier, HttpResponse, InternalServerException, NotFoundException}
-import utils.WireMockHelper
 
 case class Key21(key21: String)
 object Key21 {
   implicit val reads = Json.reads[Key21]
+}
 
 
 case class TestObjForReads(key1: String, key2: Key21, key3: Boolean, key4: Int, key5: Option[Int], key6: Seq[String])
@@ -55,21 +54,21 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.successful(Json.parse(cacheString)))
 
       val expectedResult = Map("key1" -> "value1", "key2" -> "value2")
-      val result = Await.result(sut.currentCache(journeyName), 5 seconds)
+      val result = Await.result(sut.currentCache(journeyName), 5.seconds)
       result mustBe expectedResult
     }
     "trap a NOT FOUND exception (a valid business scenario), and return an empty map in its place" in {
       val sut = createSUT()
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.failed(new NotFoundException("no cache was found")))
 
-      val result = Await.result(sut.currentCache(journeyName), 5 seconds)
+      val result = Await.result(sut.currentCache(journeyName), 5.seconds)
       result mustBe Map.empty[String, String]
     }
     "expose any exception that is not a NOT FOUND type" in {
       val sut = createSUT()
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.failed(new InternalServerException("something terminal")))
 
-      val thrown = the[InternalServerException] thrownBy Await.result(sut.currentCache(journeyName), 5 seconds)
+      val thrown = the[InternalServerException] thrownBy Await.result(sut.currentCache(journeyName), 5.seconds)
       thrown.getMessage mustBe "something terminal"
     }
   }
@@ -81,14 +80,14 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.successful(JsString("1")))
 
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.successful(JsString("2017-03-04")))
-      Await.result(sut.currentValueAs[LocalDate](journeyName, "dateValKey", string => LocalDate.parse(string)), 5 seconds) mustBe Some(new LocalDate("2017-03-04"))
+      Await.result(sut.currentValueAs[LocalDate](journeyName, "dateValKey", string => LocalDate.parse(string)), 5.seconds) mustBe Some(new LocalDate("2017-03-04"))
     }
 
     "trap a NOT FOUND exception (a valid business scenario), and return None in its place" in {
       val sut = createSUT()
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.failed(new NotFoundException("key wasn't found in cache")))
 
-      val result = Await.result(sut.currentValueAs[String](journeyName, "key1", string => string), 5 seconds)
+      val result = Await.result(sut.currentValueAs[String](journeyName, "key1", string => string), 5.seconds)
       result mustBe None
     }
 
@@ -96,7 +95,7 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
       val sut = createSUT()
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.failed(new InternalServerException("something terminal")))
 
-      val thrown = the[InternalServerException] thrownBy Await.result(sut.currentValueAs[String](journeyName, "key1", string => string), 5 seconds)
+      val thrown = the[InternalServerException] thrownBy Await.result(sut.currentValueAs[String](journeyName, "key1", string => string), 5.seconds)
       thrown.getMessage mustBe "something terminal"
     }
   }
@@ -106,7 +105,7 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
     "return the requested values where present" in {
       val sut = createSUT()
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.successful(JsString("true")))
-      Await.result(sut.mandatoryValueAs[Boolean](journeyName, "booleanValKey", string => string.toBoolean), 5 seconds) mustBe true
+      Await.result(sut.mandatoryValueAs[Boolean](journeyName, "booleanValKey", string => string.toBoolean), 5.seconds) mustBe true
     }
 
     "throw a runtime exception when the requested value is not found" in {
@@ -114,7 +113,7 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
       when(sut.httpHandler.getFromApi(any())(any())).thenReturn(Future.failed(new NotFoundException("key wasn't found in cache")))
 
       val expectedMsg = "The mandatory value under key 'key1' was not found in the journey cache for 'journey1'"
-      val thrown2 = the[RuntimeException] thrownBy Await.result(sut.mandatoryValueAs[Int](journeyName, "key1", string => string.toInt), 5 seconds)
+      val thrown2 = the[RuntimeException] thrownBy Await.result(sut.mandatoryValueAs[Int](journeyName, "key1", string => string.toInt), 5.seconds)
       thrown2.getMessage mustBe expectedMsg
     }
   }
@@ -128,7 +127,7 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
       val updatedCacheMap = Map("key1" -> "value1", "key2" -> "value2", "key7" -> "value7")
       when(sut.httpHandler.postToApi(any(),any())(any(),any(),any())).thenReturn(Future.successful(HttpResponse(OK, Some(Json.parse(updatedCacheJson)))))
 
-      val result = Await.result(sut.cache(journeyName, newValuesToCache), 5 seconds)
+      val result = Await.result(sut.cache(journeyName, newValuesToCache), 5.seconds)
       result mustBe updatedCacheMap
     }
   }
@@ -139,13 +138,13 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
       val url = s"${sut.cacheUrl(journeyName)}"
       when(sut.httpHandler.deleteFromApi(Matchers.eq(url))(any(),any())).thenReturn(Future.successful(HttpResponse(NO_CONTENT)))
 
-      val result = Await.result(sut.flush(journeyName), 5 seconds)
+      val result = Await.result(sut.flush(journeyName), 5.seconds)
       result mustBe TaiSuccessResponse
     }
   }
 
   "getCache" must {
-    "return a thing" in {
+    "serialize object for Ok" in {
       val testResponseJson = Json.obj(
         "key1" -> "value1",
         "key2" -> Json.obj(
@@ -172,17 +171,32 @@ class JourneyCacheConnectorSpec extends PlaySpec with MockitoSugar with FakeTaiP
         )
       )
 
-      val result: TestObjForReads = Await.result(createSUT.getCache[TestObjForReads](journeyName), 5.seconds)
+      val result: Option[TestObjForReads] = Await.result(createSUT(HttpHandler).getCache[TestObjForReads](journeyName), 5.seconds)
 
-      result mustBe expectedParsedResonse
+      result mustBe Some(expectedParsedResonse)
     }
+
+    "return a None for not found response" in {
+      server.stubFor(
+        get(
+          urlEqualTo(s"/tai/journey-cache/$journeyName")
+        ).willReturn(
+          notFound()
+        )
+      )
+
+      val result: Option[TestObjForReads] = Await.result(createSUT(HttpHandler).getCache[TestObjForReads](journeyName), 5.seconds)
+
+      result mustBe None
+    }
+
   }
 
   private val journeyName = "journey1"
   implicit val hc: HeaderCarrier = HeaderCarrier()
 
-  private def createSUT(): JourneyCacheConnector = new JourneyCacheConnector {
+  private def createSUT(handler: HttpHandler = mock[HttpHandler]) = new JourneyCacheConnector {
     override val serviceUrl: String = s"http://localhost:${server.port()}"
-    override val httpHandler: HttpHandler = mock[HttpHandler]
+    override val httpHandler: HttpHandler = handler
   }
 }
