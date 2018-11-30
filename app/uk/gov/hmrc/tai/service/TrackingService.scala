@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
+import com.google.inject.{Inject, Singleton}
 import controllers.employments.AddEmploymentController.TrackSuccessfulJourney_JourneyKey
 import play.api.Logger
 import uk.gov.hmrc.tai.connectors.TrackingConnector
@@ -27,11 +28,12 @@ import uk.gov.hmrc.http.HeaderCarrier
 
 import scala.util.control.NonFatal
 
-trait TrackingService {
+@Singleton
+class TrackingService {
 
-  def trackingConnector: TrackingConnector
+  def trackingConnector: TrackingConnector = TrackingConnector
 
-  def successfulJourneyCacheService: JourneyCacheService
+  val successfulJourneyCacheService: JourneyCacheService = JourneyCacheService(TrackSuccessfulJourney_JourneyKey)
 
   def isAnyIFormInProgress(nino: String)(implicit hc: HeaderCarrier): Future[Boolean] = {
     val trackingStatus = trackingForTesForms(nino) map { trackedForm =>
@@ -50,11 +52,4 @@ trait TrackingService {
   def trackingForTesForms(nino: String)(implicit hc: HeaderCarrier): Future[Seq[TrackedForm]] = {
     trackingConnector.getUserTracking(nino).map(_.filter(_.id.matches("TES[1-7]")))
   }
-
 }
-// $COVERAGE-OFF$
-object TrackingService extends TrackingService {
-  override val trackingConnector: TrackingConnector = TrackingConnector
-  override val successfulJourneyCacheService: JourneyCacheService = JourneyCacheService(TrackSuccessfulJourney_JourneyKey)
-}
-// $COVERAGE-ON$

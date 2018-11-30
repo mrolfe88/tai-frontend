@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
+import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{AnyContent, Request}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -33,12 +34,11 @@ import uk.gov.hmrc.tai.util.constants.TaiConstants._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait AuditService {
+@Singleton
+class AuditService @Inject()(personService: PersonService,
+                             auditConnector: AuditConnector) {
 
-  def appName: String
-
-  def auditConnector: AuditConnector
-  def personService: PersonService
+  def appName: String = AppName.appName
 
   val userEnterEvent = "userEntersService"
   val employmentPensionEvent = "startedEmploymentPensionJourney"
@@ -126,11 +126,3 @@ trait AuditService {
   private def authProviderId(hc: HeaderCarrier) = hc.userId.map(_.value).getOrElse("-")
 
 }
-
-object AuditService extends AuditService {
-
-  override val appName: String = AppName.appName
-  override val auditConnector: AuditConnector = AuditConnector
-  override val personService: PersonService = PersonService
-}
-

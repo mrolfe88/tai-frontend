@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
+import com.google.inject.Singleton
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.model.domain.{AddEmployment, Employment, EndEmployment, IncorrectIncome}
@@ -25,7 +26,7 @@ import uk.gov.hmrc.tai.model.TaxYear
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait EmploymentService {
+trait EmploymentServiceTrait {
 
   def connector: EmploymentsConnector
 
@@ -64,7 +65,8 @@ trait EmploymentService {
   }
 }
 // $COVERAGE-OFF$
-object EmploymentService extends EmploymentService{
+@Singleton
+class EmploymentService extends EmploymentServiceTrait {
   override val connector: EmploymentsConnector = EmploymentsConnector
 }
 // $COVERAGE-ON$

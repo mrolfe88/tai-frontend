@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.service.benefits
 
+import com.google.inject.{Inject, Singleton}
 import org.joda.time.LocalDate
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.http.HeaderCarrier
@@ -30,15 +31,12 @@ import uk.gov.hmrc.tai.util.constants.JourneyCacheConstants
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait CompanyCarService extends JourneyCacheConstants {
+@Singleton
+class CompanyCarService @Inject()(employmentService: EmploymentService, auditService: AuditService) extends JourneyCacheConstants {
 
-  def carConnector: CompanyCarConnector
+  val carConnector: CompanyCarConnector = CompanyCarConnector
 
-  def journeyCacheService: JourneyCacheService
-
-  def employmentService: EmploymentService
-
-  def auditService: AuditService
+  val journeyCacheService: JourneyCacheService = JourneyCacheService(CompanyCar_JourneyKey)
 
   def companyCarOnCodingComponents(nino: Nino, codingComponents: Seq[CodingComponent])(implicit hc: HeaderCarrier): Future[Seq[CompanyCarBenefit]] = {
     if (codingComponents.exists(_.componentType == CarBenefit))
@@ -118,11 +116,3 @@ trait CompanyCarService extends JourneyCacheConstants {
     }
   }
 }
-// $COVERAGE-OFF$
-object CompanyCarService extends CompanyCarService {
-  override val carConnector: CompanyCarConnector = CompanyCarConnector
-  override val journeyCacheService: JourneyCacheService = JourneyCacheService(CompanyCar_JourneyKey)
-  override val employmentService: EmploymentService = EmploymentService
-  override val auditService: AuditService = AuditService
-}
-// $COVERAGE-ON$

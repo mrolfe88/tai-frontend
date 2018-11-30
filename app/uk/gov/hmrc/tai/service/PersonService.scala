@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.service
 
+import com.google.inject.Singleton
 import uk.gov.hmrc.tai.connectors.{PersonConnector, TaiConnector}
 import play.api.Play.current
 import uk.gov.hmrc.domain.Nino
@@ -27,7 +28,7 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.responses.{TaiNoCompanyCarFoundResponse, TaiNotFoundResponse, TaiSuccessResponseWithPayload}
 import uk.gov.hmrc.tai.model.domain.Person
 
-trait PersonService {
+trait PersonServiceTrait {
 
   def taiClient: TaiConnector
   def personConnector: PersonConnector
@@ -40,8 +41,8 @@ trait PersonService {
   }
 }
 
-
-object PersonService extends PersonService {
+@Singleton
+class PersonService extends PersonServiceTrait {
   override val taiClient = TaiConnector
   override val personConnector = PersonConnector
 }

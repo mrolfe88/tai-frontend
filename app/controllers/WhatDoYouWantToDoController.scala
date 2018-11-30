@@ -16,6 +16,7 @@
 
 package controllers
 
+import com.google.inject.{Inject, Singleton}
 import controllers.audit.Auditable
 import controllers.auth.{TaiUser, WithAuthorisedForTaiLite}
 import play.api.Logger
@@ -39,19 +40,22 @@ import uk.gov.hmrc.time.TaxYearResolver
 
 import scala.concurrent.Future
 
-//noinspection ScalaStyle
-trait WhatDoYouWantToDoController extends TaiBaseController
-  with DelegationAwareActions
-  with WithAuthorisedForTaiLite
-  with Auditable
-  with FeatureTogglesConfig {
+@Singleton
+class WhatDoYouWantToDoController @Inject()(personService: PersonService,
+                                            employmentService: EmploymentService,
+                                            taxAccountService: TaxAccountService,
+                                            taxCodeChangeService: TaxCodeChangeService,
+                                            trackingService: TrackingService,
+                                            auditService: AuditService)
+  extends TaiBaseController
+    with AuthenticationConnectors
+    with DelegationAwareActions
+    with WithAuthorisedForTaiLite
+    with Auditable
+    with FeatureTogglesConfig {
 
-  def personService: PersonService
-  def employmentService: EmploymentService
-  def auditService: AuditService
-  def trackingService: TrackingService
-  def taxAccountService: TaxAccountService
-  def taxCodeChangeService: TaxCodeChangeService
+  override implicit def templateRenderer = LocalTemplateRenderer
+  override implicit def partialRetriever: FormPartialRetriever = TaiHtmlPartialRetriever
 
   implicit val recoveryLocation:RecoveryLocation = classOf[WhatDoYouWantToDoController]
 
@@ -179,16 +183,3 @@ trait WhatDoYouWantToDoController extends TaiBaseController
     }
   }
 }
-// $COVERAGE-OFF$
-object WhatDoYouWantToDoController extends WhatDoYouWantToDoController with AuthenticationConnectors {
-  override val personService = PersonService
-  override val employmentService = EmploymentService
-  override val auditService = AuditService
-  override val taxAccountService = TaxAccountService
-  override val taxCodeChangeService = TaxCodeChangeService
-
-  override implicit def templateRenderer = LocalTemplateRenderer
-  override implicit def partialRetriever: FormPartialRetriever = TaiHtmlPartialRetriever
-  override val trackingService = TrackingService
-}
-// $COVERAGE-ON$

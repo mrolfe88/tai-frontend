@@ -22,11 +22,12 @@ import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.tai.connectors.TaxCodeChangeConnector
 import uk.gov.hmrc.tai.connectors.responses.{TaiResponse, TaiSuccessResponseWithPayload, TaiTaxAccountFailureResponse}
 import uk.gov.hmrc.tai.model.domain.{HasTaxCodeChanged, TaxCodeChange, TaxCodeMismatch}
+import com.google.inject.{Inject, Singleton}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
-trait TaxCodeChangeService {
+trait TaxCodeChangeServiceTrait {
 
   def taxCodeChangeConnector: TaxCodeChangeConnector
 
@@ -73,6 +74,7 @@ trait TaxCodeChangeService {
   }
 }
 
-object TaxCodeChangeService extends TaxCodeChangeService {
+@Singleton
+class TaxCodeChangeService extends TaxCodeChangeServiceTrait {
   override val taxCodeChangeConnector: TaxCodeChangeConnector = TaxCodeChangeConnector
 }
