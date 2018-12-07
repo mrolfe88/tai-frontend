@@ -84,6 +84,24 @@ class YourTaxCodeControllerSpec extends PlaySpec with FakeTaiPlayApplication wit
   }
 
   "prevTaxCodes" must {
+
+    "respond with NOT_FOUND when there are no tax code records" in {
+      val testController = createTestController
+
+      when(testController.taxAccountService.scottishBandRates(any(), any(), any())(any()))
+        .thenReturn(Future.successful(Map.empty[String, BigDecimal]))
+
+      val taxCodeRecords = Seq.empty
+
+      when(testController.taxCodeChangeService.lastTaxCodeRecordsInYearPerEmployment(any(), any())(any()))
+        .thenReturn(Future.successful(taxCodeRecords))
+
+      val result = testController.prevTaxCodes(TaxYear().prev)(RequestBuilder.buildFakeRequestWithAuth("GET"))
+
+      status(result) mustBe NOT_FOUND
+
+    }
+
     "display tax code page" in {
       val testController = createTestController
       val startOfTaxYear: String = TaxYear().prev.start.toString("d MMMM yyyy")

@@ -75,8 +75,12 @@ trait YourTaxCodeController extends TaiBaseController
                 taxCodeRecords <- taxCodeChangeService.lastTaxCodeRecordsInYearPerEmployment(nino, year)
                 scottishTaxRateBands <- taxAccountService.scottishBandRates(nino, year, taxCodeRecords.map(_.taxCode))
               } yield {
-                val taxCodeViewModel = TaxCodeViewModelPreviousYears(taxCodeRecords, scottishTaxRateBands, year)
-                Ok(views.html.taxCodeDetailsPreviousYears(taxCodeViewModel))
+                if(taxCodeRecords.isEmpty) {
+                  NotFound
+                } else {
+                  val taxCodeViewModel = TaxCodeViewModelPreviousYears(taxCodeRecords, scottishTaxRateBands, year)
+                  Ok(views.html.taxCodeDetailsPreviousYears(taxCodeViewModel))
+                }
               }
             }
           } else {
