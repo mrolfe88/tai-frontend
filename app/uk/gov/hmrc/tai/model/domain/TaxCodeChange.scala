@@ -22,9 +22,13 @@ import uk.gov.hmrc.tai.util.DateHelper
 
 case class TaxCodeChange(previous: Seq[TaxCodeRecord], current: Seq[TaxCodeRecord]) {
 
-  require(current.length > 0, "No current records for Tax Code Change. Current date cannot be determined.")
+//  require(current.length > 0, "No current records for Tax Code Change. Current date cannot be determined.")
 
-  val mostRecentTaxCodeChangeDate: LocalDate = DateHelper.mostRecentDate(current.map(_.startDate))
+  val mostRecentTaxCodeChangeDate: Option[LocalDate] = if(current.nonEmpty) {
+    Some(DateHelper.mostRecentDate(current.map(_.startDate)))
+  } else {
+    None
+  }
 
   lazy val uniqueTaxCodes: Seq[String] = (previous ++ current).map(_.taxCode).distinct
 }

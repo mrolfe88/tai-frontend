@@ -36,7 +36,7 @@ object TaxCodeChangeViewModel extends TaxCodeDescriptor {
     val taxCodePairs = TaxCodePairs(taxCodeChange.previous, taxCodeChange.current)
     val changeDate = taxCodeChange.mostRecentTaxCodeChangeDate
 
-    TaxCodeChangeViewModel(taxCodePairs, changeDate, scottishTaxRateBands, gaDimensions(taxCodeChange, changeDate))
+    TaxCodeChangeViewModel(taxCodePairs, changeDate.get, scottishTaxRateBands, gaDimensions(taxCodeChange, changeDate.get))
   }
 
   def getTaxCodeExplanations(taxCodeRecord: TaxCodeRecord, scottishTaxRateBands: Map[String, BigDecimal], identifier: String)

@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.tai.connectors
 
-import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, serverError, urlEqualTo}
+import com.github.tomakehurst.wiremock.client.WireMock.{get, ok, serverError, urlEqualTo, notFound}
 import controllers.FakeTaiPlayApplication
 import org.scalatest.mock.MockitoSugar
 import org.scalatestplus.play.PlaySpec
@@ -99,10 +99,33 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with MockitoSugar with FakeTai
           val result = Await.result(testConnector.taxCodeChange(nino), 5 seconds)
           result mustEqual TaiSuccessResponseWithPayload(expectedResult)
         }
+
+        "tax code change returns empty sequence of taxCodeRecords" in {
+
+          val testConnector = createTestConnector
+          val nino = generateNino
+          val taxCodeChangeUrl = s"/tai/${nino.nino}/tax-account/tax-code-change"
+
+          val json = Json.obj(
+            "data" -> Json.obj(
+              "previous" -> Json.arr(),
+              "current" -> Json.arr()
+            ),
+            "links" -> JsArray(Seq())
+          )
+
+          val expectedResult = TaxCodeChange(Seq.empty, Seq.empty)
+          server.stubFor(
+            get(urlEqualTo(taxCodeChangeUrl)).willReturn(ok(json.toString()))
+          )
+
+          val result = Await.result(testConnector.taxCodeChange(nino), 5 seconds)
+          result mustEqual TaiSuccessResponseWithPayload(expectedResult)
+        }
       }
 
       "return failure" when {
-        "tax code change returns 500" in {
+        "tax code change returns INTERNAL_SERVER_ERROR" in {
           val testConnector = createTestConnector
           val nino = generateNino
 
@@ -117,7 +140,7 @@ class TaxCodeChangeConnectorSpec extends PlaySpec with MockitoSugar with FakeTai
 
           result mustBe TaiTaxAccountFailureResponse(expectedMessage)
         }
-      }
+    }
     }
 
   "lastTaxCodeRecords" must {

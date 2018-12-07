@@ -73,7 +73,7 @@ trait TaxCodeChangeService {
     }
   }
 
-  def latestTaxCodeChangeDate(nino: Nino)(implicit hc: HeaderCarrier): Future[LocalDate] = {
+  def latestTaxCodeChangeDate(nino: Nino)(implicit hc: HeaderCarrier): Future[Option[LocalDate]] = {
     taxCodeChange(nino).map(_.mostRecentTaxCodeChangeDate)
   }
 

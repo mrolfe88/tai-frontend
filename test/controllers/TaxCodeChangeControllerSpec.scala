@@ -134,6 +134,20 @@ class TaxCodeChangeControllerSpec extends PlaySpec
         doc.title() must include(messagesApi("global.error.pageNotFound404.title"))
       }
     }
+
+    "respond with NOT_FOUND when there are no current taxCodeRecords" in {
+
+      val SUT = createSUT(true)
+
+      val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
+      when(SUT.taxCodeChangeService.taxCodeChange(any())(any())).thenReturn(Future.successful(taxCodeChange))
+      when(SUT.taxAccountService.scottishBandRates(any(), any(), any())(any())).thenReturn(Future.successful(Map[String, BigDecimal]()))
+
+      val result = SUT.taxCodeComparison()(RequestBuilder.buildFakeRequestWithAuth("GET"))
+
+      status(result) mustBe NOT_FOUND
+
+    }
   }
 
 
@@ -170,7 +184,6 @@ class TaxCodeChangeControllerSpec extends PlaySpec
     val ad: Future[Some[Authority]] = Future.successful(Some(AuthBuilder.createFakeAuthority(generateNino.toString())))
     when(authConnector.currentAuthority(any(), any())).thenReturn(ad)
     when(personService.personDetails(any())(any())).thenReturn(Future.successful(fakePerson(generateNino)))
-    when(taxCodeChangeService.latestTaxCodeChangeDate(generateNino)).thenReturn(Future.successful(new LocalDate(2018,6,11)))
   }
 
 }

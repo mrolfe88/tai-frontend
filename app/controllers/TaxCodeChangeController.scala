@@ -64,8 +64,12 @@ trait TaxCodeChangeController extends TaiBaseController
                 taxCodeChange <- taxCodeChangeService.taxCodeChange(nino)
                 scottishTaxRateBands <- taxAccountService.scottishBandRates(nino, TaxYear(), taxCodeChange.uniqueTaxCodes)
               } yield {
-                val viewModel = TaxCodeChangeViewModel(taxCodeChange, scottishTaxRateBands)
-                Ok(views.html.taxCodeChange.taxCodeComparison(viewModel))
+                if(taxCodeChange.current.isEmpty) {
+                  NotFound
+                } else {
+                  val viewModel = TaxCodeChangeViewModel(taxCodeChange, scottishTaxRateBands)
+                  Ok(views.html.taxCodeChange.taxCodeComparison(viewModel))
+                }
               }
             }
           } else {
@@ -94,8 +98,13 @@ trait TaxCodeChangeController extends TaiBaseController
                 companyCarBenefits <- companyCarService.companyCarOnCodingComponents(nino, codingComponents)
 
               } yield {
-                val viewModel = YourTaxFreeAmountViewModel(taxCodeChange.mostRecentTaxCodeChangeDate, codingComponents, employmentNames, companyCarBenefits)
-                Ok(views.html.taxCodeChange.yourTaxFreeAmount(viewModel))
+                taxCodeChange.mostRecentTaxCodeChangeDate match {
+                  case Some(date) => {
+                    val viewModel = YourTaxFreeAmountViewModel(date, codingComponents, employmentNames, companyCarBenefits)
+                    Ok(views.html.taxCodeChange.yourTaxFreeAmount(viewModel))
+                  }
+                  case _ => NotFound // TODO TEST
+                }
               }
             }
           } else {

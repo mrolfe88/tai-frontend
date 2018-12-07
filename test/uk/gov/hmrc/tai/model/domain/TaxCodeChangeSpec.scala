@@ -37,6 +37,20 @@ class TaxCodeChangeSpec extends PlaySpec{
         taxCodeChangeJson.as[TaxCodeChange] mustEqual expectedModel
       }
 
+      "return a valid TaxCodeChange object when there are no taxCodeRecords" in {
+        val expectedModel = TaxCodeChange(
+          Seq.empty,
+          Seq.empty
+        )
+
+        val emptyRecordTaxCodeJson = Json.obj(
+          "previous" -> Json.arr(),
+          "current" -> Json.arr()
+        )
+
+        emptyRecordTaxCodeJson.as[TaxCodeChange] mustEqual expectedModel
+      }
+
 
       "throw a JsError given an empty Seq of TaxCodeRecords" in {
         an[JsResultException] should be thrownBy emptyTaxCodeRecordsJson.as[TaxCodeChange]
@@ -47,7 +61,15 @@ class TaxCodeChangeSpec extends PlaySpec{
       "return the latest tax code change date from a sequence of tax code records" in {
         val model = TaxCodeChange(Seq(previousTaxCodeRecord1, fullYearTaxCode), Seq(currentTaxCodeRecord1, fullYearTaxCode))
 
-        model.mostRecentTaxCodeChangeDate mustEqual startDate.plusMonths(1).plusDays(1)
+        model.mostRecentTaxCodeChangeDate mustEqual Some(startDate.plusMonths(1).plusDays(1))
+      }
+
+      "return None when there are no taxCodeRecords" in {
+
+        val model = TaxCodeChange(Seq.empty, Seq.empty)
+
+        model.mostRecentTaxCodeChangeDate mustEqual None
+
       }
     }
 
