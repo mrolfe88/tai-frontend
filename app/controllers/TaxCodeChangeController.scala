@@ -103,7 +103,7 @@ trait TaxCodeChangeController extends TaiBaseController
                     val viewModel = YourTaxFreeAmountViewModel(date, codingComponents, employmentNames, companyCarBenefits)
                     Ok(views.html.taxCodeChange.yourTaxFreeAmount(viewModel))
                   }
-                  case _ => NotFound // TODO TEST
+                  case _ => NotFound
                 }
               }
             }

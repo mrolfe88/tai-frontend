@@ -78,6 +78,24 @@ class TaxCodeChangeControllerSpec extends PlaySpec
   }
 
   "yourTaxFreeAmount" must {
+
+    "respond with NOT_FOUND" when {
+      "there are no taxCodeRecords" in {
+        val SUT = createSUT(true)
+
+        val taxCodeChange = TaxCodeChange(Seq.empty, Seq.empty)
+
+        when(SUT.codingComponentService.taxFreeAmountComponents(any(), any())(any())).thenReturn(Future.successful(codingComponents))
+        when(SUT.companyCarService.companyCarOnCodingComponents(any(), any())(any())).thenReturn(Future.successful(Nil))
+        when(SUT.employmentService.employmentNames(any(), any())(any())).thenReturn(Future.successful(Map.empty[Int, String]))
+        when(SUT.taxCodeChangeService.taxCodeChange(any())(any())).thenReturn(Future.successful(taxCodeChange))
+
+        val result = SUT.yourTaxFreeAmount()(RequestBuilder.buildFakeRequestWithAuth("GET"))
+
+        status(result) mustBe NOT_FOUND
+      }
+    }
+
     "show 'Your tax-free amount' page" when {
       "the request has an authorised session" in {
         val SUT = createSUT(true)
