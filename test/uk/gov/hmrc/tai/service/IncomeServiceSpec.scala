@@ -272,10 +272,10 @@ class IncomeServiceSpec extends PlaySpec with MockitoSugar with FakeTaiPlayAppli
 
   def createSUT = new SUT
 
-  class SUT extends IncomeService {
-    override val taxAccountService: TaxAccountService = mock[TaxAccountService]
-    override val employmentService: EmploymentService = mock[EmploymentService]
-    override val taiConnector: TaiConnector = mock[TaiConnector]
-  }
+  class SUT extends IncomeService(
+    mock[TaxAccountService],
+    mock[EmploymentService],
+    mock[TaiConnector]
+  )
 
 }
