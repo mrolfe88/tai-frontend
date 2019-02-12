@@ -73,7 +73,7 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
     controllers.routes.IncomeSourceSummaryController.onPageLoad(pensionId).url
   )
 
-  def doYouGetThisPension(): Action[AnyContent] = (authenticate andThen validatePerson).async {
+  def doYouGetThisPensionDecision: Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
       implicit val user = request.taiUser
 
@@ -85,7 +85,7 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
   }
 
 
-  def handleDoYouGetThisPension: Action[AnyContent] = (authenticate andThen validatePerson).async {
+  def handleDoYouGetThisPensionDecision: Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
       journeyCacheService.mandatoryValues(UpdatePensionProvider_IdKey, UpdatePensionProvider_NameKey) flatMap { mandatoryVals =>
         UpdateRemovePensionForm.form.bindFromRequest().fold(
@@ -222,7 +222,7 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
       Future.successful(Ok(views.html.pensions.update.confirmation()))
   }
 
-  def redirectUpdatePension(id: Int): Action[AnyContent] = (authenticate andThen validatePerson).async {
+  def doYouGetThisPension(id: Int): Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
       implicit val user = request.taiUser
 
@@ -237,7 +237,7 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
         } yield {
           successfulJourneyCache match {
             case Some(_) => Redirect(routes.UpdatePensionProviderController.duplicateSubmissionWarning())
-            case _ => Redirect(routes.UpdatePensionProviderController.doYouGetThisPension())
+            case _ => Redirect(routes.UpdatePensionProviderController.doYouGetThisPensionDecision())
           }
         }
       }
@@ -276,8 +276,8 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
           },
           success => {
             success.yesNoChoice match {
-              case Some(YesValue) => Future.successful(Redirect(controllers.pensions.routes.UpdatePensionProviderController.
-                doYouGetThisPension()))
+              case Some(YesValue) => Future.successful(Redirect(controllers.pensions.routes.UpdatePensionProviderController
+                .doYouGetThisPensionDecision()))
               case Some(NoValue) => Future.successful(Redirect(controllers.routes.IncomeSourceSummaryController.
                 onPageLoad(mandatoryValues(1).toInt)))
             }
