@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.tai.viewModels
 
+import play.api.Logger
 import uk.gov.hmrc.play.views.helpers.MoneyPounds
 import uk.gov.hmrc.tai.filters.TaxAccountFilter
 import uk.gov.hmrc.tai.model.domain.Employment
@@ -60,14 +61,27 @@ object IncomeSourceComparisonViewModel extends ViewModelHelper with TaxAccountFi
   }
 
   private def incomeSourceDetail(taxCodeIncomes: Seq[TaxCodeIncome], employments: Seq[Employment], taxYearStatus:String): Seq[IncomeSourceDetail] = {
-    taxCodeIncomes.flatMap { (t: TaxCodeIncome) =>
-      t.employmentId.flatMap { (id: Int) =>
-        employments.find(_.sequenceNumber == id).map{ e:Employment =>
-          val amount = withPoundPrefixAndSign(MoneyPounds(t.amount, 0))
-          IncomeSourceDetail(e.name,e.sequenceNumber, amount, taxYearStatus)
+
+    taxYearStatus match {
+      case TaiConstants.CurrentTaxYearPlusOne =>
+        taxCodeIncomes.map { taxCodeIncome =>
+          lazy val amount = withPoundPrefixAndSign(MoneyPounds(taxCodeIncome.amount, 0))
+          taxCodeIncome.employmentId match {
+            case Some(id) => IncomeSourceDetail(taxCodeIncome.name, id, amount, taxYearStatus)
+            case _ => throw new RuntimeException("Employment id is missing")
+          }
         }
-      }
+      case _ =>
+        taxCodeIncomes.flatMap { taxCodeIncome =>
+          taxCodeIncome.employmentId.flatMap { id =>
+            employments.find(_.sequenceNumber == id).map{ employment =>
+              val amount = withPoundPrefixAndSign(MoneyPounds(taxCodeIncome.amount, 0))
+              IncomeSourceDetail(employment.name,employment.sequenceNumber, amount, taxYearStatus)
+            }
+          }
+        }
     }
+
   }
 
   private def incomeSourceComparisionDetail(incomeSourceDetailCY:Seq[IncomeSourceDetail],
@@ -82,7 +96,7 @@ object IncomeSourceComparisonViewModel extends ViewModelHelper with TaxAccountFi
           case IncomeSourceDetail(name, id, amount, TaiConstants.CurrentTaxYear) => IncomeSourceComparisonDetail(id, name, amount, TaiConstants.notApplicable.toLowerCase())
           case IncomeSourceDetail(name, id, amount, TaiConstants.CurrentTaxYearPlusOne) => IncomeSourceComparisonDetail(id, name, TaiConstants.notApplicable.toLowerCase(), amount)
         }
-        case(2) =>{
+        case(2) => {
           val sortedSeq = incomeSourceDetailSeq.sortBy(_.taxYearStatus)
           IncomeSourceComparisonDetail(sortedSeq(0).empId, sortedSeq(0).name,sortedSeq(0).amount,sortedSeq(1).amount)
         }
