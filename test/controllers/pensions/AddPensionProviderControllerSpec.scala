@@ -66,36 +66,14 @@ class AddPensionProviderControllerSpec extends PlaySpec
 
   "addPensionProviderName" must {
     "show the pensionProvider name form page" when {
-      "the request has an authorised session and no previous value in cache" in {
+      "the request has an authorised session" in {
         val sut = createSUT
-
-        when(addPensionProviderJourneyCacheService.currentValue(Matchers.eq(AddPensionProvider_NameKey))(any())).thenReturn(Future.successful(None))
-
         val result = sut.addPensionProviderName()(RequestBuilder.buildFakeRequestWithAuth("GET"))
 
         status(result) mustBe OK
 
         val doc = Jsoup.parse(contentAsString(result))
         doc.title() must include(Messages("tai.addPensionProvider.addNameForm.title"))
-        doc.toString must not include ("testPensionName123")
-      }
-    }
-  }
-
-  "addPensionProviderName" must {
-    "show the pensionProvider name form page" when {
-      "the request has an authorised session and previous value exists in cache" in {
-        val sut = createSUT
-
-        when(addPensionProviderJourneyCacheService.currentValue(Matchers.eq(AddPensionProvider_NameKey))(any())).thenReturn(Future.successful(Some("testPensionName123")))
-
-        val result = sut.addPensionProviderName()(RequestBuilder.buildFakeRequestWithAuth("GET"))
-
-        status(result) mustBe OK
-
-        val doc = Jsoup.parse(contentAsString(result))
-        doc.title() must include(Messages("tai.addPensionProvider.addNameForm.title"))
-        doc.toString must include("testPensionName123")
       }
     }
   }

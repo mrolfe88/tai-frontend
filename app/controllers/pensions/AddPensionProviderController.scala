@@ -72,12 +72,8 @@ class AddPensionProviderController @Inject()(pensionProviderService: PensionProv
 
   def addPensionProviderName(): Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
-      journeyCacheService.currentValue(AddPensionProvider_NameKey) map {
-        pensionName =>
-          implicit val user = request.taiUser
-
-          Ok(views.html.pensions.addPensionName(PensionProviderNameForm.form.fill(pensionName.getOrElse(""))))
-      }
+      implicit val user = request.taiUser
+      Future.successful(Ok(views.html.pensions.addPensionName(PensionProviderNameForm.form)))
   }
 
   def submitPensionProviderName(): Action[AnyContent] = (authenticate andThen validatePerson).async {
