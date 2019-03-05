@@ -66,26 +66,14 @@ class AddEmploymentControllerSpec extends PlaySpec
 
   "addEmploymentName" must {
     "show the employment name form page" when {
-      "the request has an authorised session and no previously supplied employment name is present in cache" in {
+      "the request has an authorised session" in {
         val sut = createSUT
-        when(addEmploymentJourneyCacheService.currentValue(Matchers.eq(AddEmployment_NameKey))(any())).thenReturn(Future.successful(None))
         val result = sut.addEmploymentName()(RequestBuilder.buildFakeRequestWithAuth("GET"))
 
         status(result) mustBe OK
 
         val doc = Jsoup.parse(contentAsString(result))
         doc.title() must include(Messages("tai.addEmployment.addNameForm.title"))
-      }
-      "the request has an authorised session and a previously supplied employment name is present in cache" in {
-        val sut = createSUT
-        when(addEmploymentJourneyCacheService.currentValue(Matchers.eq(AddEmployment_NameKey))(any())).thenReturn(Future.successful(Some("employer one plc")))
-        val result = sut.addEmploymentName()(RequestBuilder.buildFakeRequestWithAuth("GET"))
-
-        status(result) mustBe OK
-
-        val doc = Jsoup.parse(contentAsString(result))
-        doc.title() must include(Messages("tai.addEmployment.addNameForm.title"))
-        doc.toString must include("employer one plc")
       }
     }
   }

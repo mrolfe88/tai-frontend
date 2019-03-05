@@ -76,10 +76,9 @@ class AddEmploymentController @Inject()(auditService: AuditService,
 
   def addEmploymentName(): Action[AnyContent] = (authenticate andThen validatePerson).async {
       implicit request =>
-        journeyCacheService.currentValue(AddEmployment_NameKey) map { providedName =>
-          implicit val user = request.taiUser
-          Ok(views.html.employments.add_employment_name_form(EmploymentNameForm.form.fill(providedName.getOrElse(""))))
-        }
+        implicit val user = request.taiUser
+          Future.successful(Ok(views.html.employments.add_employment_name_form(EmploymentNameForm.form)))
+
   }
 
   def submitEmploymentName(): Action[AnyContent] = (authenticate andThen validatePerson).async {
