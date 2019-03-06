@@ -77,10 +77,9 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
     implicit request =>
       implicit val user = request.taiUser
 
-      journeyCacheService.collectedValues(Seq(UpdatePensionProvider_IdKey,UpdatePensionProvider_NameKey), Seq(UpdatePensionProvider_ReceivePensionQuestionKey)) map tupled { (mandatoryValues, optionalValues) =>
+      journeyCacheService.mandatoryValues(UpdatePensionProvider_IdKey, UpdatePensionProvider_NameKey) map { mandatoryValues =>
         val model = PensionProviderViewModel(mandatoryValues.head.toInt, mandatoryValues(1))
-        val form = UpdateRemovePensionForm.form.fill(optionalValues.head)
-        Ok(views.html.pensions.update.doYouGetThisPensionIncome(model, form))
+        Ok(views.html.pensions.update.doYouGetThisPensionIncome(model, UpdateRemovePensionForm.form))
       }
   }
 

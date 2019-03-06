@@ -62,10 +62,8 @@ class UpdatePensionProviderControllerSpec extends PlaySpec with FakeTaiPlayAppli
   "doYouGetThisPension" must {
     "show the doYouGetThisPension view" in {
 
-      val PensionQuestionKey = "yes"
-
-      when(journeyCacheService.collectedValues(Seq(Matchers.anyVararg[String]), Seq(Matchers.anyVararg[String]))(any()))
-        .thenReturn(Future.successful(Seq(pensionId.toString, pensionName), Seq(Some(PensionQuestionKey))))
+      when(journeyCacheService.mandatoryValues(Matchers.anyVararg[String])(any()))
+        .thenReturn(Future.successful(Seq(pensionId.toString, pensionName)))
 
       val result = createController.doYouGetThisPension()(fakeGetRequest)
 
