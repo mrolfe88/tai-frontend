@@ -125,9 +125,8 @@ class UpdatePensionProviderControllerSpec extends PlaySpec with FakeTaiPlayAppli
       "an authorised user calls the page" in {
 
         val cache = Seq("TEST")
-        val optionalCache = Seq(None)
-        when(journeyCacheService.collectedValues(any(), any())(any())).
-          thenReturn(Future.successful(cache, optionalCache))
+        when(journeyCacheService.mandatoryValues(Matchers.anyVararg[String]())(any())).
+          thenReturn(Future.successful(cache))
 
         val result = createController.whatDoYouWantToTellUs()(fakeGetRequest)
 
@@ -136,12 +135,9 @@ class UpdatePensionProviderControllerSpec extends PlaySpec with FakeTaiPlayAppli
         doc.title() must include(Messages("tai.updatePension.whatDoYouWantToTellUs.heading", "TEST"))
       }
       "we have pension details in the cache" in {
-
-
         val cache = Seq("TEST")
-        val optionalCache = Seq(Some("test1"))
-        when(journeyCacheService.collectedValues(any(), any())(any())).
-          thenReturn(Future.successful(cache, optionalCache))
+        when(journeyCacheService.mandatoryValues(Matchers.anyVararg[String]())(any())).
+          thenReturn(Future.successful(cache))
 
         val result = createController.whatDoYouWantToTellUs()(fakeGetRequest)
 

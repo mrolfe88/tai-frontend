@@ -107,13 +107,10 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
 
   def whatDoYouWantToTellUs: Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
-      for {
-        (mandatoryValues, optionalValues) <- journeyCacheService.collectedValues(Seq(UpdatePensionProvider_NameKey), Seq(UpdatePensionProvider_DetailsKey))
-      } yield {
+      journeyCacheService.mandatoryValues(UpdatePensionProvider_NameKey).map { mandatoryValues =>
         implicit val user = request.taiUser
-
-        Ok(views.html.pensions.update.whatDoYouWantToTellUs(mandatoryValues(0),
-          WhatDoYouWantToTellUsForm.form.fill(optionalValues(0).getOrElse(""))))
+        Ok(views.html.pensions.update.whatDoYouWantToTellUs(mandatoryValues.head,
+          WhatDoYouWantToTellUsForm.form))
       }
   }
 
