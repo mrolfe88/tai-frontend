@@ -72,7 +72,6 @@ class UpdateEmploymentController @Inject()(employmentService: EmploymentService,
     implicit request =>
       implicit val user = request.taiUser
       (for {
-        userSuppliedDetails <- journeyCacheService.currentValue(UpdateEmployment_EmploymentDetailsKey)
         employment <- employmentService.employment(Nino(user.getNino), empId)
         futureResult <-
           employment match {
@@ -80,7 +79,7 @@ class UpdateEmploymentController @Inject()(employmentService: EmploymentService,
               val cache = Map(UpdateEmployment_EmploymentIdKey -> empId.toString, UpdateEmployment_NameKey -> emp.name)
               journeyCacheService.cache(cache).map(_ =>
                 Ok(views.html.employments.update.whatDoYouWantToTellUs(EmploymentViewModel(emp.name, empId),
-                  UpdateEmploymentDetailsForm.form.fill(userSuppliedDetails.getOrElse(""))))
+                  UpdateEmploymentDetailsForm.form))
               )
             }
             case _ => throw new RuntimeException("Error during employment details retrieval")

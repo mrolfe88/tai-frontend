@@ -92,24 +92,6 @@ class UpdateEmploymentControllerSpec extends PlaySpec
         verify(journeyCacheService, times(1)).cache(Matchers.eq(cache))(any())
       }
     }
-    "retrieve the employment update details from the cache" when {
-      "the request has an authorised session" in {
-        val sut = createSUT
-        when(employmentService.employment(any(), any())(any())).thenReturn(Future.successful(Some(employment)))
-        val cacheDetails = Some("updateDetails")
-        when(journeyCacheService.currentValue(any())(any())).thenReturn(Future.successful(cacheDetails))
-        val cache = Map(UpdateEmployment_EmploymentIdKey -> "1", UpdateEmployment_NameKey -> employment.name)
-        when(journeyCacheService.cache(Matchers.eq(cache))(any())).thenReturn(Future.successful(cache))
-
-        val result = sut.updateEmploymentDetails(1)(RequestBuilder.buildFakeRequestWithAuth("GET"))
-
-        status(result) mustBe OK
-        val doc = Jsoup.parse(contentAsString(result))
-        doc.title() must include(Messages("tai.updateEmployment.whatDoYouWantToTellUs.title", employment.name))
-        doc.toString must include("updateDetails")
-        verify(journeyCacheService, times(1)).currentValue(any())(any())
-      }
-    }
 
     "throw exception" when {
       "employment not found" in {
