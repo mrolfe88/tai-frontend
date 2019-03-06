@@ -283,8 +283,8 @@ class EndEmploymentControllerSpec
       val endEmploymentTest = createEndEmploymentTest
       val employmentId = 1
 
-      when(endEmploymentJourneyCacheService.collectedValues(Matchers.anyVararg[Seq[String]], any())(any()))
-        .thenReturn(Future.successful(Seq(employerName, employmentId.toString), Seq()))
+      when(endEmploymentJourneyCacheService.mandatoryValues(Matchers.anyVararg[String])(any()))
+        .thenReturn(Future.successful(Seq(employerName, employmentId.toString)))
 
       val result = endEmploymentTest.endEmploymentPage(fakeGetRequest)
       val doc = Jsoup.parse(contentAsString(result))

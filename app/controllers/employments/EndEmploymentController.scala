@@ -205,16 +205,10 @@ class EndEmploymentController @Inject()(auditService: AuditService,
     implicit request =>
       implicit val user = request.taiUser
       val nino = Nino(user.getNino)
-      journeyCacheService.collectedValues(Seq(EndEmployment_NameKey, EndEmployment_EmploymentIdKey),
-        Seq(EndEmployment_EndDateKey)) map tupled { (mandatorySeq, optionalSeq) => {
-        optionalSeq match {
-          case Seq(Some(date)) => Ok(views.html.employments.endEmployment(EmploymentEndDateForm(mandatorySeq(0))
-            .form.fill(new LocalDate(date)), EmploymentViewModel(mandatorySeq(0), mandatorySeq(1).toInt)))
-          case _ => Ok(views.html.employments.endEmployment(EmploymentEndDateForm(mandatorySeq(0)).form,
+      journeyCacheService.mandatoryValues(EndEmployment_NameKey, EndEmployment_EmploymentIdKey) map { mandatorySeq =>
+        Ok(views.html.employments.endEmployment(EmploymentEndDateForm(mandatorySeq(0)).form,
             EmploymentViewModel(mandatorySeq(0), mandatorySeq(1).toInt)))
         }
-      }
-      }
   }
 
   def handleEndEmploymentPage(employmentId: Int): Action[AnyContent] = (authenticate andThen validatePerson).async {
