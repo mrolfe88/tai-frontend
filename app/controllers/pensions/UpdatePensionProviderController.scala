@@ -133,14 +133,10 @@ class UpdatePensionProviderController @Inject()(taxAccountService: TaxAccountSer
 
   def addTelephoneNumber: Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
-      for {
-        pensionId <- journeyCacheService.mandatoryValueAsInt(UpdatePensionProvider_IdKey)
-        telephoneCache <- journeyCacheService.optionalValues(UpdatePensionProvider_TelephoneQuestionKey, UpdatePensionProvider_TelephoneNumberKey)
-      } yield {
-        val user = Some(request.taiUser)
-
+      val user = Some(request.taiUser)
+      journeyCacheService.mandatoryValueAsInt(UpdatePensionProvider_IdKey) map { pensionId =>
         Ok(views.html.can_we_contact_by_phone(user, None, telephoneNumberViewModel(pensionId),
-          YesNoTextEntryForm.form().fill(YesNoTextEntryForm(telephoneCache(0), telephoneCache(1)))))
+          YesNoTextEntryForm.form()))
       }
   }
 

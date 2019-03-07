@@ -182,29 +182,24 @@ class UpdatePensionProviderControllerSpec extends PlaySpec with FakeTaiPlayAppli
   "addTelephoneNumber" must {
     "show the contact by telephone page" when {
       "an authorised request is received" in {
-
         when(journeyCacheService.mandatoryValueAsInt(any())(any())).
           thenReturn(Future.successful(1))
-        when(journeyCacheService.optionalValues(any())(any()))
-          .thenReturn(Future.successful(Seq(None, None)))
         val result = createController.addTelephoneNumber()(fakeGetRequest)
 
         status(result) mustBe OK
         val doc = Jsoup.parse(contentAsString(result))
         doc.title() must include(Messages("tai.canWeContactByPhone.title"))
       }
-      "an authorised request is received and we have cached data" in {
 
+      "an authorised request is received and we have cached data" in {
         when(journeyCacheService.mandatoryValueAsInt(any())(any())).
           thenReturn(Future.successful(1))
-        when(journeyCacheService.optionalValues(any())(any()))
-          .thenReturn(Future.successful(Seq(Some("yes"), Some("123456789"))))
+
         val result = createController.addTelephoneNumber()(fakeGetRequest)
 
         status(result) mustBe OK
         val doc = Jsoup.parse(contentAsString(result))
         doc.title() must include(Messages("tai.canWeContactByPhone.title"))
-        doc.toString must include("123456789")
       }
     }
   }
