@@ -123,38 +123,14 @@ class AddPensionProviderControllerSpec extends PlaySpec
       "the request has an authorised session and no previous value is held in the cache" in {
         val sut = createSUT
         val pensionProviderName = "Pension Provider"
-        when(addPensionProviderJourneyCacheService.collectedValues(any(), any())(any())).thenReturn(Future.successful(Seq(pensionProviderName), Seq(None)))
+        when(addPensionProviderJourneyCacheService.mandatoryValues(Matchers.anyVararg[String]())(any())).
+          thenReturn(Future.successful(Seq(pensionProviderName)))
 
         val result = sut.receivedFirstPay()(RequestBuilder.buildFakeRequestWithAuth("GET"))
         status(result) mustBe OK
 
         val doc = Jsoup.parse(contentAsString(result))
         doc.title() must include(Messages("tai.addPensionProvider.firstPay.title", pensionProviderName))
-      }
-
-      "the request has an authorised session and a previous value of 'No' is held in the cache" in {
-        val sut = createSUT
-        val pensionProviderName = "Pension Provider"
-        when(addPensionProviderJourneyCacheService.collectedValues(any(), any())(any())).thenReturn(Future.successful(Seq(pensionProviderName), Seq(Some(NoValue))))
-
-        val result = sut.receivedFirstPay()(RequestBuilder.buildFakeRequestWithAuth("GET"))
-        status(result) mustBe OK
-
-        val doc = Jsoup.parse(contentAsString(result))
-        doc.title() must include(Messages("tai.addPensionProvider.firstPay.title", pensionProviderName))
-        doc.select("input[id=firstPayChoice-no][checked=checked]").size() mustBe 1
-      }
-      "the request has an authorised session and a previous value of 'Yes' is held in the cache" in {
-        val sut = createSUT
-        val pensionProviderName = "Pension Provider"
-        when(addPensionProviderJourneyCacheService.collectedValues(any(), any())(any())).thenReturn(Future.successful(Seq(pensionProviderName), Seq(Some(YesValue))))
-
-        val result = sut.receivedFirstPay()(RequestBuilder.buildFakeRequestWithAuth("GET"))
-        status(result) mustBe OK
-
-        val doc = Jsoup.parse(contentAsString(result))
-        doc.title() must include(Messages("tai.addPensionProvider.firstPay.title", pensionProviderName))
-        doc.select("input[id=firstPayChoice-yes][checked=checked]").size() mustBe 1
       }
     }
   }
@@ -224,7 +200,8 @@ class AddPensionProviderControllerSpec extends PlaySpec
       "the request has an authorised session and no previously cached date present" in {
         val sut = createSUT
         val pensionProviderName = "TEST"
-        when(addPensionProviderJourneyCacheService.collectedValues(any(), any())(any())).thenReturn(Future.successful(Seq(pensionProviderName), Seq(None)))
+        when(addPensionProviderJourneyCacheService.mandatoryValues(Matchers.anyVararg[String]())(any()))
+          .thenReturn(Future.successful(Seq(pensionProviderName)))
 
         val result = sut.addPensionProviderStartDate()(RequestBuilder.buildFakeRequestWithAuth("GET"))
         status(result) mustBe OK
@@ -232,32 +209,6 @@ class AddPensionProviderControllerSpec extends PlaySpec
         val doc = Jsoup.parse(contentAsString(result))
         doc.title() must include(Messages("tai.addPensionProvider.startDateForm.title", pensionProviderName))
         doc.toString must not include ("2037")
-      }
-
-      "the request has an authorised session and a previously cached date is present" in {
-        val sut = createSUT
-        val pensionProviderName = "TEST"
-        when(addPensionProviderJourneyCacheService.collectedValues(any(), any())(any())).thenReturn(Future.successful(Seq(pensionProviderName), Seq(Some("2037-01-18"))))
-
-        val result = sut.addPensionProviderStartDate()(RequestBuilder.buildFakeRequestWithAuth("GET"))
-        status(result) mustBe OK
-
-        val doc = Jsoup.parse(contentAsString(result))
-        doc.title() must include(Messages("tai.addPensionProvider.startDateForm.title", pensionProviderName))
-        doc.toString must include("2037")
-      }
-    }
-
-    "return error" when {
-      "cache doesn't return data" in {
-        val sut = createSUT
-        when(addPensionProviderJourneyCacheService.collectedValues(any(), any())(any()))
-          .thenReturn(Future.successful(Seq.empty, Seq.empty))
-        when(addPensionProviderJourneyCacheService.currentValueAs[String](any(), any())(any())).thenReturn(Future.successful(None))
-
-        val result = sut.addPensionProviderStartDate()(RequestBuilder.buildFakeRequestWithAuth("GET"))
-
-        status(result) mustBe INTERNAL_SERVER_ERROR
       }
     }
   }

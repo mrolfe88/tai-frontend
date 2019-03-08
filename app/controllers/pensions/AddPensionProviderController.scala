@@ -94,9 +94,8 @@ class AddPensionProviderController @Inject()(pensionProviderService: PensionProv
   def receivedFirstPay(): Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
       implicit val user = request.taiUser
-
-      journeyCacheService.collectedValues(Seq(AddPensionProvider_NameKey), Seq(AddPensionProvider_FirstPaymentKey)) map tupled { (mandatoryVals, optionalVals) =>
-        Ok(views.html.pensions.addPensionReceivedFirstPay(AddPensionProviderFirstPayForm.form.fill(optionalVals(0)), mandatoryVals(0)))
+      journeyCacheService.mandatoryValues(AddPensionProvider_NameKey) map { mandatoryVals =>
+        Ok(views.html.pensions.addPensionReceivedFirstPay(AddPensionProviderFirstPayForm.form, mandatoryVals(0)))
       }
   }
 
@@ -138,17 +137,8 @@ class AddPensionProviderController @Inject()(pensionProviderService: PensionProv
   def addPensionProviderStartDate(): Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
       implicit val user = request.taiUser
-
-      (journeyCacheService.collectedValues(Seq(AddPensionProvider_NameKey), Seq(AddPensionProvider_StartDateKey)) map tupled { (mandatoryVals, optionalVals) =>
-
-        val form = optionalVals(0) match {
-          case Some(userDateString) => PensionAddDateForm(mandatoryVals(0)).form.fill(new LocalDate(userDateString))
-          case _ => PensionAddDateForm(mandatoryVals(0)).form
-        }
-
-        Ok(views.html.pensions.addPensionStartDate(form, mandatoryVals(0)))
-      }).recover {
-        case NonFatal(e) => internalServerError(e.getMessage)
+      journeyCacheService.mandatoryValues(AddPensionProvider_NameKey) map { mandatoryVals =>
+        Ok(views.html.pensions.addPensionStartDate(PensionAddDateForm(mandatoryVals(0)).form, mandatoryVals(0)))
       }
   }
 
