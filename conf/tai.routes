@@ -37,7 +37,7 @@ GET         /add-employment/employment-success                                  
 # Add Pension Provider Journey
 
 GET         /add-pension-provider/name                                                 @controllers.pensions.AddPensionProviderController.addPensionProviderName
-POST        /add-pension-provider/name                                                 @controllers.pensions.AddPensionProviderController.submitPensionProviderName
+POST        /add-pension-provider/name/:referred                                       @controllers.pensions.AddPensionProviderController.submitPensionProviderName(referred: Boolean)
 
 GET         /add-pension-provider/received-first-payment                               @controllers.pensions.AddPensionProviderController.receivedFirstPay
 POST        /add-pension-provider/received-first-payment                               @controllers.pensions.AddPensionProviderController.submitFirstPay

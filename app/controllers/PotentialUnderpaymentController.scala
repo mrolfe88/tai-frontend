@@ -32,8 +32,8 @@ import uk.gov.hmrc.tai.connectors.responses.TaiSuccessResponseWithPayload
 import uk.gov.hmrc.tai.model.TaxYear
 import uk.gov.hmrc.tai.model.domain.TaxAccountSummary
 import uk.gov.hmrc.tai.service.{AuditService, CodingComponentService, PersonService, TaxAccountService}
-import uk.gov.hmrc.tai.util.Referral
 import uk.gov.hmrc.tai.util.constants.AuditConstants
+import uk.gov.hmrc.tai.util.referral.Referral
 import uk.gov.hmrc.tai.viewModels.PotentialUnderpaymentViewModel
 
 class PotentialUnderpaymentController @Inject()(taxAccountService: TaxAccountService,

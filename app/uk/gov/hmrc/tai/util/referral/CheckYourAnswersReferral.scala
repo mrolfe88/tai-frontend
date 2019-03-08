@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.tai.util
+package uk.gov.hmrc.tai.util.referral
 
-import play.api.mvc.Request
-
-trait Referral {
-
-  def referer[A](implicit request: Request[A]): String = {
-    request.headers.toMap("Referer").mkString
-  }
-
-  def resourceName[A](implicit request: Request[A]): String = {
-      request.headers.toMap("Referer").mkString.split("/").last
-  }
+class CheckYourAnswersReferral(checkYourAnwsersResourceName: String) extends Referral {
+  //def referredFromCheckYourAnswers: Boolean = checkYourAnwsersResourceName == resourceName
 }

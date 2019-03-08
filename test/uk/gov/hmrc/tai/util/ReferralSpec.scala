@@ -20,6 +20,7 @@ import builders.RequestBuilder
 import controllers.FakeTaiPlayApplication
 import org.scalatest.MustMatchers
 import org.scalatestplus.play.PlaySpec
+import uk.gov.hmrc.tai.util.referral.Referral
 
 
 class ReferralSpec extends PlaySpec with MustMatchers with FakeTaiPlayApplication {

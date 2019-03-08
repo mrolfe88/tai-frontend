@@ -26,7 +26,7 @@ import org.joda.time.LocalDate
 import play.api.Play.current
 import play.api.i18n.Messages
 import play.api.i18n.Messages.Implicits._
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Call}
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.partials.FormPartialRetriever
@@ -38,6 +38,7 @@ import uk.gov.hmrc.tai.model.domain.AddPensionProvider
 import uk.gov.hmrc.tai.service.journeyCache.JourneyCacheService
 import uk.gov.hmrc.tai.service.{PensionProviderService, _}
 import uk.gov.hmrc.tai.util.constants.{AuditConstants, FormValuesConstants, JourneyCacheConstants}
+import uk.gov.hmrc.tai.util.referral.{CheckYourAnswersReferral, Referral}
 import uk.gov.hmrc.tai.viewModels.CanWeContactByPhoneViewModel
 import uk.gov.hmrc.tai.viewModels.pensions.{CheckYourAnswersViewModel, PensionNumberViewModel}
 
@@ -58,7 +59,8 @@ class AddPensionProviderController @Inject()(pensionProviderService: PensionProv
   with Auditable
   with JourneyCacheConstants
   with AuditConstants
-  with FormValuesConstants {
+  with FormValuesConstants
+  with Referral {
 
   private def contactPhonePensionProvider(implicit messages: Messages): CanWeContactByPhoneViewModel = {
     CanWeContactByPhoneViewModel(
@@ -75,22 +77,32 @@ class AddPensionProviderController @Inject()(pensionProviderService: PensionProv
       journeyCacheService.currentValue(AddPensionProvider_NameKey) map {
         pensionName =>
           implicit val user = request.taiUser
+          if(resourceName == "check-your-answers") {
+            Ok(views.html.pensions.addPensionName(PensionProviderNameForm.form.fill(pensionName.getOrElse("")), true))
+          } else {
+            Ok(views.html.pensions.addPensionName(PensionProviderNameForm.form, false))
+          }
 
-          Ok(views.html.pensions.addPensionName(PensionProviderNameForm.form.fill(pensionName.getOrElse(""))))
       }
   }
 
-  def submitPensionProviderName(): Action[AnyContent] = (authenticate andThen validatePerson).async {
+  def submitPensionProviderName(referred: Boolean): Action[AnyContent] = (authenticate andThen validatePerson).async {
     implicit request =>
       implicit val user = request.taiUser
-
       PensionProviderNameForm.form.bindFromRequest.fold(
         formWithErrors => {
-          Future.successful(BadRequest(views.html.pensions.addPensionName(formWithErrors)))
+          Future.successful(BadRequest(views.html.pensions.addPensionName(formWithErrors, false)))
         },
         pensionProviderName => {
           journeyCacheService.cache(Map(AddPensionProvider_NameKey -> pensionProviderName))
-            .map(_ => Redirect(controllers.pensions.routes.AddPensionProviderController.receivedFirstPay()))
+            .map{ _ =>
+              if(referred) {
+                Redirect(controllers.pensions.routes.AddPensionProviderController.checkYourAnswers())
+              }else{
+                Redirect(controllers.pensions.routes.AddPensionProviderController.receivedFirstPay())
+              }
+            }
+
         }
       )
   }
@@ -100,7 +112,12 @@ class AddPensionProviderController @Inject()(pensionProviderService: PensionProv
       implicit val user = request.taiUser
 
       journeyCacheService.collectedValues(Seq(AddPensionProvider_NameKey), Seq(AddPensionProvider_FirstPaymentKey)) map tupled { (mandatoryVals, optionalVals) =>
-        Ok(views.html.pensions.addPensionReceivedFirstPay(AddPensionProviderFirstPayForm.form.fill(optionalVals(0)), mandatoryVals(0)))
+
+        if(resourceName == "check-your-answers") {
+          Ok(views.html.pensions.addPensionReceivedFirstPay(AddPensionProviderFirstPayForm.form.fill(optionalVals(0)), mandatoryVals(0)))
+        } else {
+          Ok(views.html.pensions.addPensionReceivedFirstPay(AddPensionProviderFirstPayForm.form, mandatoryVals(0)))
+        }
       }
   }
 
