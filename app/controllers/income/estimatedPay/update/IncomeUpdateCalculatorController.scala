@@ -453,7 +453,6 @@ class IncomeUpdateCalculatorController @Inject()(incomeService: IncomeService,
           payPeriodInDays <- futurePayPeriodInDays
           totalSalary <- futureTotalSalary
         }yield {
-          val errorMessage = TaxablePayPeriod.errorMessage(payPeriod, payPeriodInDays)
           TaxablePayslipForm.createForm(FormHelper.stripNumber(totalSalary), payPeriod, payPeriodInDays).bindFromRequest().fold(
             formWithErrors => {
               val viewModel = TaxablePaySlipAmountViewModel(formWithErrors, payPeriod, payPeriodInDays, id, employerName)
