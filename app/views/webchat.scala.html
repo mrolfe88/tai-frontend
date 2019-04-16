@@ -36,6 +36,35 @@
 
     <div id="Nuance-chat-anchored"></div>
 
-    <script type="text/javascript" src="@ApplicationConfig.webchatJsUrl"></script>
+
+
+    <script type="text/javascript">
+      var nuanceData = {"sessionId"}
+
+      var agentMsgListener = {
+        onAgentMsg: function(evt){
+          console.log("NuanceLog :: Agent Message: chatID = " + evt.chatID );
+           console.log(evt );
+        }
+      };
+
+      var customerMsgListener = {
+        onCustomerMsg: function(evt){
+            console.log("NuanceLog :: Customer Message: chatID = " + evt.chatID );
+        }
+      };
+
+      var agentAssignedListener = {
+        onAgentAssigned: function(evt){
+            console.log("NuanceLog :: Agent assigned: aid = " + Inq.getData().CHM.aid  );
+        }
+      };
+
+      var InqRegistry = {
+        chatListeners: [agentMsgListener,customerMsgListener,agentAssignedListener]
+      };
+    </script>
+
+  <script type="text/javascript" src="@ApplicationConfig.webchatJsUrl"></script>
 
 }
