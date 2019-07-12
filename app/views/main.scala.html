@@ -128,25 +128,28 @@
 }
 
 @inlineScript = {
-    <script>
-        function deleteNuanceCookies() {
-            if(arguments.length > 0) {
-                var srcs = Array.prototype.slice.call(arguments);
-                srcs.forEach(function(src) {
-                    var ifrm = document.createElement('iframe');
-                    ifrm.style.display = "none";
-                    document.body.appendChild(ifrm);
-                    ifrm.src = src +"?CLEAR"
-                })
+    if(FeatureTogglesConfig.webChatEnabled){
+        <script>
+            function deleteNuanceCookies() {
+                if(arguments.length > 0) {
+                    var srcs = Array.prototype.slice.call(arguments);
+                    srcs.forEach(function(src) {
+                        var ifrm = document.createElement('iframe');
+                        ifrm.style.display = "none";
+                        document.body.appendChild(ifrm);
+                        ifrm.src = src +"?CLEAR"
+                    })
+                }
             }
-        }
 
-        window.onload = deleteNuanceCookies("https://hmrc-uk.digital.nuance.com/tagserver/postToServer.min.htm");
+            window.onload = deleteNuanceCookies("https://hmrc-uk.digital.nuance.com/tagserver/postToServer.min.htm");
 
-    </script>
+        </script>
+    }
 
   <script>
-    var sessionId = new Date().getTime() + '.' + Math.random().toString(36).substring(5)
+
+          var sessionId = new Date().getTime() + '.' + Math.random().toString(36).substring(5)
     var clientId = ga.getAll()[0].get('clientId');
 
     window.dataLayer = window.dataLayer || []
