@@ -93,7 +93,7 @@ class zeroTaxEstimatedIncomeTaxSpec extends TaiViewSpec {
   }
 
   val defaultViewModel = {
-    val bandedGraph = BandedGraph("taxGraph", List.empty[Band], 0, 0, 0, 0, 0, 0, 0, None, None)
+    val bandedGraph = BandedGraph(List.empty[Band], 0, 0, 0, 0, 0, 0, 0, None, None)
     ZeroTaxEstimatedIncomeTaxViewModel(0, 9000, 11500, bandedGraph, "taxRegion")
   }
 

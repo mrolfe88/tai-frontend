@@ -187,7 +187,7 @@ class simpleEstimatedIncomeTaxSpec extends TaiViewSpec {
     }
   }
 
-  val bandedGraph = BandedGraph("taxGraph", Nil, 0, 0, 0, 0, 0, 0, 0, None, None)
+  val bandedGraph = BandedGraph(Nil, 0, 0, 0, 0, 0, 0, 0, None, None)
 
   val ukTaxBands = List(
     TaxBand("pa", "", 11500, 0, None, None, 0),

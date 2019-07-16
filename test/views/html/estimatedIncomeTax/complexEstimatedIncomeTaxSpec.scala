@@ -71,7 +71,7 @@ class complexEstimatedIncomeTaxSpec extends TaiViewSpec {
 
   }
 
-  val bandedGraph = BandedGraph("taxGraph", Nil, 0, 0, 0, 0, 0, 0, 0, None, None)
+  val bandedGraph = BandedGraph(Nil, 0, 0, 0, 0, 0, 0, 0, None, None)
 
   val taxBands = List(
     TaxBand("PSR", "", income = 3000, tax = 0, lowerBand = Some(0), upperBand = Some(11000), rate = 0),

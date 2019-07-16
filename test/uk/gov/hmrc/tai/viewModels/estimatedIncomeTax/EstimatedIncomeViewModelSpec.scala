@@ -41,7 +41,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val result = BandedGraph(Seq.empty[CodingComponent], List.empty[TaxBand], 0, 0, 0, taxViewType = ZeroTaxView)
 
-      result mustBe BandedGraph("taxGraph", Nil, 0, 0, 0, 0, 0, 0, 0, None,None)
+      result mustBe BandedGraph(Nil, 0, 0, 0, 0, 0, 0, 0, None,None)
 
     }
 
@@ -56,7 +56,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val graph = BandedGraph(Seq.empty[CodingComponent],taxBand, 11500, 0, 9000, taxViewType = ZeroTaxView)
 
-      graph mustBe BandedGraph("taxGraph", bands, 0, 11500, 11500, 78.26, 11500, 78.26, 0, None, None)
+      graph mustBe BandedGraph(bands, 0, 11500, 11500, 78.26, 11500, 78.26, 0, None, None)
 
     }
 
@@ -74,7 +74,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
       val nextBandMessage = Some(Messages("tai.taxCalc.nextTaxBand", 12800))
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, 3200, 5000, taxViewType = SimpleTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 32000, 19200, 16.66, 3200, 99.99, 5000, nextBandMessage,Some(Swatch(26.04,5000)))
+      dataF mustBe BandedGraph(bands, 0, 32000, 19200, 16.66, 3200, 99.99, 5000, nextBandMessage,Some(Swatch(26.04,5000)))
     }
 
     "have two bands(0 & Taxed Income) to display in graph" in {
@@ -92,7 +92,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val nextBandMessage = Some(Messages("tai.taxCalc.nextTaxBand", 102000))
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, 3000, 15000, taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 150000, 48000, 6.25, 3000, 100.00, 15000, nextBandMessage,Some(Swatch(31.25,15000)))
+      dataF mustBe BandedGraph(bands, 0, 150000, 48000, 6.25, 3000, 100.00, 15000, nextBandMessage,Some(Swatch(31.25,15000)))
     }
 
     "have two bands(0 & Taxed Income) for multiple other band to display in graph" in {
@@ -111,7 +111,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, 5000, 65250,taxViewType = ComplexTaxView)
 
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 200000, 200000, 2.5, 5000, 100, 65250,None,Some(Swatch(32.62,65250)))
+      dataF mustBe BandedGraph(bands, 0, 200000, 200000, 2.5, 5000, 100, 65250,None,Some(Swatch(32.62,65250)))
     }
 
     "have three bands as 20% 40% 45% for three other rate bands to display in graph" in {
@@ -130,7 +130,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand,0,65250,taxViewType = SimpleTaxView)
 
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 200000, 200000, 0, 0, 100.00, 65250,None,Some(Swatch(32.62,65250)))
+      dataF mustBe BandedGraph(bands, 0, 200000, 200000, 0, 0, 100.00, 65250,None,Some(Swatch(32.62,65250)))
     }
 
     "have four bands as 20% 40% 45% 45% for four other rate bands to display in graph" in {
@@ -151,7 +151,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand,0, 67500, taxViewType = ComplexTaxView)
 
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 230000, 230000, 0, 0, 99.98, 67500,None,Some(Swatch(29.34,67500)))
+      dataF mustBe BandedGraph(bands, 0, 230000, 230000, 0, 0, 99.98, 67500,None,Some(Swatch(29.34,67500)))
     }
 
     "have two bands as 20% 40% for two other rate bands to display in graph" in {
@@ -169,7 +169,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, totalEstimatedTax = 43300, taxViewType = SimpleTaxView)
 
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 150000, 125000, 0, 0, 100.00, 43300, nextBandMessage,Some(Swatch(34.64,43300)))
+      dataF mustBe BandedGraph(bands, 0, 150000, 125000, 0, 0, 100.00, 43300, nextBandMessage,Some(Swatch(34.64,43300)))
     }
 
     "have two 0 % band and one 20% band in graph" in {
@@ -188,7 +188,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent], taxBand, taxFreeAllowanceBandSum = 4000, totalEstimatedTax = 3000,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 36000, 23000, 34.78, 8000, 99.99, 3000, nextBandMessage, Some(Swatch(13.04,3000)))
+      dataF mustBe BandedGraph(bands, 0, 36000, 23000, 34.78, 8000, 99.99, 3000, nextBandMessage, Some(Swatch(13.04,3000)))
     }
 
     "have two 0 % band and one Taxed Income band in graph" in {
@@ -206,7 +206,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, taxFreeAllowanceBandSum = 10000, totalEstimatedTax =6000,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 40000, 40000, 50, 20000, 100, 6000, None, Some(Swatch(15.00,6000)))
+      dataF mustBe BandedGraph(bands, 0, 40000, 40000, 50, 20000, 100, 6000, None, Some(Swatch(15.00,6000)))
     }
 
     "have two 0 % band and one 7.5% band in graph" in {
@@ -223,7 +223,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, taxFreeAllowanceBandSum = 11000, totalEstimatedTax =2000,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 29000, 29000, 48.27, 14000, 99.99, 2000,None,Some(Swatch(6.89,2000)))
+      dataF mustBe BandedGraph(bands, 0, 29000, 29000, 48.27, 14000, 99.99, 2000,None,Some(Swatch(6.89,2000)))
     }
 
     "have three 0 % band and zero other band in graph" in {
@@ -243,7 +243,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, taxFreeAllowanceBandSum = 11000, totalEstimatedTax =0,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 43000, 29000, 99.99, 29000, 99.99, 0, nextBandMessage,Some(Swatch(0,0)))
+      dataF mustBe BandedGraph(bands, 0, 43000, 29000, 99.99, 29000, 99.99, 0, nextBandMessage,Some(Swatch(0,0)))
     }
 
     "have two 0 % band and one Taxed Income band(7.5 & 20 ) in graph" in {
@@ -262,7 +262,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, taxFreeAllowanceBandSum = 10000, totalEstimatedTax =3750,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 40000, 40000, 50.00, 20000, 100.00, 3750,None,Some(Swatch(9.37,3750)))
+      dataF mustBe BandedGraph(bands, 0, 40000, 40000, 50.00, 20000, 100.00, 3750,None,Some(Swatch(9.37,3750)))
     }
 
     "have two 0 % band and one Taxed Income band(7.5 & 20 & 45) in graph" in {
@@ -284,7 +284,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, taxFreeAllowanceBandSum = 10000, totalEstimatedTax = 6750,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 110000, 60000, 33.32, 20000, 99.98, 6750, nextBandMessage,Some(Swatch(11.25,6750)))
+      dataF mustBe BandedGraph(bands, 0, 110000, 60000, 33.32, 20000, 99.98, 6750, nextBandMessage,Some(Swatch(11.25,6750)))
     }
 
     "have two 0 % band and one Taxed Income band(7.5 & 20 & 45 & 60) in graph" in {
@@ -307,7 +307,7 @@ class EstimatedIncomeViewModelSpec extends PlaySpec with FakeTaiPlayApplication 
 
       val dataF = BandedGraph(Seq.empty[CodingComponent],taxBand, taxFreeAllowanceBandSum = 10000, totalEstimatedTax =9750,
         taxViewType = ComplexTaxView)
-      dataF mustBe BandedGraph("taxGraph", bands, 0, 210000, 120000, 16.66, 20000, 99.99, 9750, nextBandMessage, Some(Swatch(8.12,9750)))
+      dataF mustBe BandedGraph(bands, 0, 210000, 120000, 16.66, 20000, 99.99, 9750, nextBandMessage, Some(Swatch(8.12,9750)))
     }
 
   }

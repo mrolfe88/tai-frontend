@@ -60,7 +60,7 @@ class SimpleEstimatedIncomeTaxViewModelSpec extends PlaySpec with FakeTaiPlayApp
         higherRateTaxBand
       )
 
-      val bandedGraph = BandedGraph(TaxGraph,
+      val bandedGraph = BandedGraph(
         List(
           Band(TaxFree, 24.04, 11500, 0, ZeroBand),
           Band("Band", 75.95, 36335, 7834, NonZeroBand))

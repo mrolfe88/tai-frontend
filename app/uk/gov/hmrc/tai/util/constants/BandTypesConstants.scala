@@ -31,7 +31,6 @@ trait BandTypesConstants {
   val DividendAdditionalRate = "HDR2"
   val ZeroBand = "ZeroBand"
   val NonZeroBand = "NonZeroBand"
-  val TaxGraph = "taxGraph"
   val TaxFree = "TaxFree"
   val BasicRate = "B"
 }

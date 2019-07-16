@@ -42,7 +42,7 @@ class ZeroTaxEstimatedIncomeTaxViewModelSpec extends PlaySpec with FakeTaiPlayAp
         CodingComponent(PersonalAllowancePA, None, 11500, "Personal Allowance", Some(11500))
       )
 
-      val bandedGraph = BandedGraph(TaxGraph,
+      val bandedGraph = BandedGraph(
         List(Band(TaxFree,78.26,11500,0,"pa"))
         , 0, 11500, 11500, 78.26, 11500, 78.26,0,
         None,

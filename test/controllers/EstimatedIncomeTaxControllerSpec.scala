@@ -77,7 +77,7 @@ class EstimatedIncomeTaxControllerSpec extends PlaySpec with MockitoSugar with F
           Band("TaxFree", 24.04, 11500, 0, ZeroBand),
           Band("Band", 75.95, 36335, 7834, NonZeroBand)
         )
-        val viewModelBandedGraph = BandedGraph(TaxGraph, viewModelBands, 0, 150000, 47835, 24.04, 11500, 99.99, 7834,
+        val viewModelBandedGraph = BandedGraph(viewModelBands, 0, 150000, 47835, 24.04, 11500, 99.99, 7834,
           Some("You can earn £102,165 more before your income reaches the next tax band."), Some(Swatch(16.37, 7834)))
 
         val viewModelTaxBands = List(
@@ -159,7 +159,7 @@ class EstimatedIncomeTaxControllerSpec extends PlaySpec with MockitoSugar with F
           Band(TaxFree, 78.78, 13000, 0, ZeroBand),
           Band("Band", 21.21, 3500, 700, NonZeroBand)
         )
-        val viewModelBandedGraph = BandedGraph("taxGraph", viewModelBands, 0, 45000, 16500, 78.78, 13000, 99.99, 700,
+        val viewModelBandedGraph = BandedGraph(viewModelBands, 0, 45000, 16500, 78.78, 13000, 99.99, 700,
           Some("You can earn £28,500 more before your income reaches the next tax band."),
           Some(Swatch(4.24, 700)))
 
@@ -229,7 +229,7 @@ class EstimatedIncomeTaxControllerSpec extends PlaySpec with MockitoSugar with F
         val viewModelBands = List(
           Band(TaxFree, 78.26, 11500, 0, "pa")
         )
-        val viewModelBandedGraph = BandedGraph("taxGraph", viewModelBands, 0, 11500, 11500, 78.26, 11500, 78.26, 0, None, None)
+        val viewModelBandedGraph = BandedGraph(viewModelBands, 0, 11500, 11500, 78.26, 11500, 78.26, 0, None, None)
 
         val expectedViewModel = ZeroTaxEstimatedIncomeTaxViewModel(0, 9000, 11500, viewModelBandedGraph, UkTaxRegion)
 

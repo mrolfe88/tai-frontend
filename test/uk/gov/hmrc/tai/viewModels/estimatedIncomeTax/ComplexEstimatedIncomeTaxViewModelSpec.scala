@@ -47,7 +47,7 @@ class ComplexEstimatedIncomeTaxViewModelSpec extends PlaySpec with FakeTaiPlayAp
         TaxBand("SR", "", 1500, 0, Some(0), Some(5000), 45)
       )
 
-      val bandedGraph = BandedGraph(TaxGraph,
+      val bandedGraph = BandedGraph(
         List(
           Band(TaxFree, 69.69, 11500, 0, ZeroBand),
           Band("Band", 30.30, 5000, 700, NonZeroBand))
